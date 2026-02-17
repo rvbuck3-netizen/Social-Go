@@ -4,13 +4,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut, Shield, ShieldCheck, Instagram, Twitter, Globe, Settings, Clock, Ban, ChevronDown, ChevronUp } from "lucide-react";
+import { User, Instagram, Twitter, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { SiTiktok, SiSnapchat, SiLinkedin } from "react-icons/si";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -64,24 +62,6 @@ export default function Profile() {
     },
   });
 
-  const goModeMutation = useMutation({
-    mutationFn: async (isGoMode: boolean) => {
-      const res = await fetch(api.users.updateStatus.path, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isGoMode }),
-      });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.users.me.path] });
-      toast({
-        title: "Go Mode Updated",
-        description: "Your visibility has been changed.",
-      });
-    },
-  });
-
   if (isLoading) return (
     <div className="h-full flex items-center justify-center">
       <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
@@ -92,11 +72,8 @@ export default function Profile() {
 
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="profile-container">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3 flex items-center justify-between gap-2">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3">
         <h1 className="text-base font-semibold">{user?.username}</h1>
-        <Button size="icon" variant="ghost" data-testid="button-settings">
-          <Settings className="h-5 w-5" />
-        </Button>
       </div>
 
       <div className="px-4 pt-5 pb-4">
@@ -161,51 +138,7 @@ export default function Profile() {
         )}
       </div>
 
-      <div className="px-4 py-3 border-y space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <Label className="text-sm font-semibold flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              Go Mode
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Show your location to nearby people
-            </p>
-          </div>
-          <Switch 
-            checked={user?.isGoMode} 
-            onCheckedChange={(checked) => goModeMutation.mutate(checked)}
-            disabled={goModeMutation.isPending}
-            data-testid="switch-go-mode"
-          />
-        </div>
-        {user?.isGoMode && user?.goModeExpiresAt && (
-          <p className="text-xs text-muted-foreground flex items-center gap-1" data-testid="text-go-mode-expiry">
-            <Clock className="h-3 w-3" />
-            Auto-expires {new Date(user.goModeExpiresAt).toLocaleTimeString()} for your safety
-          </p>
-        )}
-      </div>
-
-      <div className="px-4 py-3 border-b">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Safety</p>
-        <div className="space-y-2">
-          <div className="flex items-start gap-2">
-            <ShieldCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-muted-foreground">Your exact location is never shown. Nearby users see an approximate area only.</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Clock className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-muted-foreground">Go Mode automatically turns off after 2 hours to protect your privacy.</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Ban className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-            <p className="text-xs text-muted-foreground">Block or report anyone directly from the map. Blocked users can't see you.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 pt-4 pb-4">
+      <div className="px-4 pt-4 pb-4 border-t">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Edit Profile</p>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => updateProfileMutation.mutate(data))} className="space-y-3">
@@ -332,13 +265,6 @@ export default function Profile() {
             </Button>
           </form>
         </Form>
-      </div>
-
-      <div className="px-4 pb-6">
-        <Button variant="ghost" className="w-full justify-start gap-3 text-destructive" data-testid="button-sign-out">
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
       </div>
     </div>
   );

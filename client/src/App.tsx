@@ -9,7 +9,8 @@ import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
-import { MessageCircle, Map as MapIcon, User, ShoppingBag } from "lucide-react";
+import AppSettings from "@/pages/AppSettings";
+import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function BottomNav() {
@@ -20,6 +21,7 @@ function BottomNav() {
     { href: "/feed", icon: MessageCircle, label: "Feed" },
     { href: "/shop", icon: ShoppingBag, label: "Shop" },
     { href: "/profile", icon: User, label: "Profile" },
+    { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
@@ -57,6 +59,7 @@ function Router() {
           <Route path="/feed" component={Feed} />
           <Route path="/shop" component={Shop} />
           <Route path="/profile" component={Profile} />
+          <Route path="/settings" component={AppSettings} />
           <Route component={NotFound} />
         </Switch>
       </main>
