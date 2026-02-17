@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -19,7 +19,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
-// Fix Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
@@ -113,115 +112,129 @@ export default function SocialMap() {
           longitude: pos.coords.longitude 
         });
       });
-    }, 30000); // Update location every 30s
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  if (!userLocation) return <div className="h-full flex items-center justify-center bg-background">Locating...</div>;
+  if (!userLocation) return (
+    <div className="h-full flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm text-muted-foreground">Finding your location...</span>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full" data-testid="map-container">
       <MapContainer 
         center={userLocation} 
-        zoom={13} 
+        zoom={15} 
         className="h-full w-full z-0"
         zoomControl={false}
+        attributionControl={false}
       >
         <TileLayer 
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        />
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+          opacity={0.6}
+        />
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+          opacity={0.8}
         />
         <MapRecenter coords={userLocation} />
         
-        {/* Your Location */}
         <Marker 
           position={userLocation}
           icon={new L.DivIcon({
-            html: `<div class="w-10 h-10 rounded-full border-4 border-primary bg-background shadow-2xl overflow-hidden animate-pulse">
-                     <img src="${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=You'}" class="w-full h-full object-cover" />
+            html: `<div class="user-marker-you">
+                     <img src="${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=You'}" />
                    </div>`,
             className: "",
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
+            iconSize: [44, 44],
+            iconAnchor: [22, 22]
           })}
         >
-          <Popup className="modern-popup">You are here</Popup>
+          <Popup className="modern-popup">
+            <div className="p-2 text-sm font-medium">You are here</div>
+          </Popup>
         </Marker>
 
-        {/* Posts */}
         {posts?.map((post) => (
           <Marker 
             key={post.id} 
             position={[post.latitude, post.longitude]}
             icon={new L.DivIcon({
-              html: `<div class="w-8 h-8 rounded-full border-2 border-primary/20 bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden flex items-center justify-center">
-                       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}" class="w-6 h-6 rounded-full" />
+              html: `<div class="post-marker">
+                       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}" />
                      </div>`,
               className: "",
-              iconSize: [32, 32],
-              iconAnchor: [16, 16]
+              iconSize: [34, 34],
+              iconAnchor: [17, 17]
             })}
           >
             <Popup className="modern-popup">
-              <div className="p-2 min-w-[140px] bg-background text-foreground rounded-lg">
-                <div className="flex items-center gap-2 mb-2 border-b border-border pb-2">
-                  <Avatar className="h-6 w-6">
+              <div className="p-3 min-w-[160px] max-w-[240px]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
                   </Avatar>
-                  <p className="font-bold text-xs">{post.authorName}</p>
+                  <span className="font-semibold text-xs">{post.authorName}</span>
                 </div>
-                <p className="text-sm leading-tight">{post.content}</p>
+                <p className="text-sm leading-snug">{post.content}</p>
               </div>
             </Popup>
           </Marker>
         ))}
 
-        {/* Nearby Users */}
         {nearbyUsers?.filter(u => u.id !== user?.id).map((u) => (
           <Marker 
             key={u.id} 
             position={[u.latitude, u.longitude]}
             icon={new L.DivIcon({
-              html: `<div class="w-8 h-8 rounded-full border-2 border-primary bg-background shadow-md overflow-hidden p-0.5">
-                       <img src="${u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`}" class="w-full h-full rounded-full" />
+              html: `<div class="nearby-user-marker ${u.isBoosted ? 'boosted' : ''}">
+                       <img src="${u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`}" />
                      </div>`,
               className: "",
-              iconSize: [32, 32],
-              iconAnchor: [16, 16]
+              iconSize: [36, 36],
+              iconAnchor: [18, 18]
             })}
           >
             <Popup className="modern-popup">
-              <div className="p-3 min-w-[180px] bg-background rounded-xl shadow-none">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="h-10 w-10 border-2 border-primary/10">
+              <div className="p-3 min-w-[180px]">
+                <div className="flex items-center gap-3 mb-2">
+                  <Avatar className="h-10 w-10 border-2 border-white/20">
                     <AvatarImage src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} />
                     <AvatarFallback>{u.username[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-bold text-sm leading-tight">{u.username}</p>
-                    <p className="text-xs text-muted-foreground">Nearby now</p>
+                    <p className="font-semibold text-sm">{u.username}</p>
+                    <p className="text-xs text-muted-foreground">Nearby</p>
                   </div>
                 </div>
                 
                 {(u.instagram || u.twitter || u.website) && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-1 pt-2 border-t border-border">
                     {u.instagram && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                      <Button size="icon" variant="ghost" asChild>
                         <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer">
                           <Instagram className="h-4 w-4 text-pink-500" />
                         </a>
                       </Button>
                     )}
                     {u.twitter && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                      <Button size="icon" variant="ghost" asChild>
                         <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer">
                           <Twitter className="h-4 w-4 text-sky-500" />
                         </a>
                       </Button>
                     )}
                     {u.website && (
-                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                      <Button size="icon" variant="ghost" asChild>
                         <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer">
                           <Globe className="h-4 w-4 text-muted-foreground" />
                         </a>
@@ -235,36 +248,37 @@ export default function SocialMap() {
         ))}
       </MapContainer>
 
-      {/* Floating Controls */}
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+      <div className="absolute top-4 right-4 z-[1000]">
         <Button 
           size="icon" 
           variant="secondary" 
-          className="rounded-full shadow-lg h-10 w-10 bg-background/80 backdrop-blur-sm"
+          className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm"
           onClick={() => {
              navigator.geolocation.getCurrentPosition((pos) => {
                setUserLocation([pos.coords.latitude, pos.coords.longitude]);
              });
           }}
+          data-testid="button-recenter"
         >
           <Navigation className="h-5 w-5" />
         </Button>
       </div>
 
       <div className="absolute top-4 left-4 z-[1000]">
-        <div className="bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border shadow-lg flex items-center gap-2">
-          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-green-500 animate-pulse" : "bg-muted")} />
-          <span className="text-xs font-bold uppercase tracking-wider">Social Go</span>
+        <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-green-500 animate-pulse" : "bg-muted-foreground/40")} />
+          <span className="text-xs font-bold uppercase tracking-widest">Social Go</span>
         </div>
       </div>
 
       <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
         <DialogTrigger asChild>
           <Button 
-            className="absolute bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-[1000] active-elevate-2 hover:scale-105 transition-transform"
+            className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl z-[1000]"
             size="icon"
+            data-testid="button-create-post"
           >
-            <Plus className="h-8 w-8" />
+            <Plus className="h-7 w-7" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -283,6 +297,7 @@ export default function SocialMap() {
                         placeholder="What's happening here?" 
                         className="resize-none min-h-[100px]"
                         {...field}
+                        data-testid="input-post-content"
                       />
                     </FormControl>
                   </FormItem>
@@ -293,27 +308,28 @@ export default function SocialMap() {
                 control={form.control}
                 name="hideExactLocation"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <FormItem className="flex flex-row items-center justify-between gap-2 rounded-lg border p-3">
                     <div className="space-y-0.5">
                       <FormLabel className="flex items-center gap-2">
                         <EyeOff className="h-4 w-4 text-muted-foreground" />
                         Blur Location
                       </FormLabel>
                       <FormDescription>
-                        Hide your exact house location
+                        Hide your exact address
                       </FormDescription>
                     </div>
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        data-testid="switch-blur-location"
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full h-11" disabled={postMutation.isPending}>
+              <Button type="submit" className="w-full" disabled={postMutation.isPending} data-testid="button-submit-post">
                 Post Update
               </Button>
             </form>

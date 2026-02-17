@@ -1,11 +1,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
-import { MapPin, User } from "lucide-react";
+import { MapPin, User, Heart, MessageCircle as MessageIcon, Send } from "lucide-react";
 
 export default function Feed() {
   const { data: posts, isLoading } = useQuery<any[]>({
@@ -14,57 +13,72 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="flex flex-row items-center gap-4">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[150px]" />
-                <Skeleton className="h-3 w-[100px]" />
+      <div className="h-full overflow-y-auto">
+        <div className="border-b px-4 py-3">
+          <h1 className="text-base font-semibold" data-testid="text-feed-title">Feed</h1>
+        </div>
+        <div className="divide-y">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <Skeleton className="h-3 w-24" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-[80%]" />
-            </CardContent>
-          </Card>
-        ))}
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 pb-20 space-y-4 overflow-y-auto h-full">
-      <h1 className="text-2xl font-bold mb-6">Recent Activity</h1>
-      {posts?.map((post) => (
-        <Card key={post.id} className="hover-elevate">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-            <div className="flex items-center gap-3">
-              <Avatar>
+    <div className="h-full overflow-y-auto pb-20" data-testid="feed-container">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3">
+        <h1 className="text-base font-semibold" data-testid="text-feed-title">Feed</h1>
+      </div>
+
+      <div className="divide-y">
+        {posts?.map((post) => (
+          <div key={post.id} className="px-4 py-3" data-testid={`post-item-${post.id}`}>
+            <div className="flex gap-3">
+              <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
-                <AvatarFallback><User /></AvatarFallback>
+                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
               </Avatar>
-              <div>
-                <CardTitle className="text-sm font-medium">{post.authorName}</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-sm" data-testid={`text-author-${post.id}`}>{post.authorName}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    Nearby
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                  </span>
+                </div>
+                <p className="text-sm mt-1 leading-relaxed" data-testid={`text-content-${post.id}`}>{post.content}</p>
+                <div className="flex items-center gap-5 mt-2 -ml-1">
+                  <button className="flex items-center gap-1 text-muted-foreground transition-colors" data-testid={`button-like-${post.id}`}>
+                    <Heart className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                  <button className="flex items-center gap-1 text-muted-foreground transition-colors" data-testid={`button-comment-${post.id}`}>
+                    <MessageIcon className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                  <button className="flex items-center gap-1 text-muted-foreground transition-colors" data-testid={`button-share-${post.id}`}>
+                    <Send className="h-4 w-4" strokeWidth={1.5} />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex items-center text-xs text-muted-foreground gap-1">
-              <MapPin className="h-3 w-3" />
-              <span>Nearby</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-foreground leading-relaxed">{post.content}</p>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+        ))}
+      </div>
+
       {posts?.length === 0 && (
-        <div className="text-center py-10 text-muted-foreground">
-          <p>No posts nearby yet. Be the first to post!</p>
+        <div className="text-center py-16 text-muted-foreground">
+          <p className="text-sm">No posts nearby yet. Be the first!</p>
         </div>
       )}
     </div>
