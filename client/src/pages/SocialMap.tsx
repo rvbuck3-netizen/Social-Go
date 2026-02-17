@@ -6,16 +6,17 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Navigation, Instagram, Twitter, Globe } from "lucide-react";
+import { Plus, Navigation, Instagram, Twitter, Globe, EyeOff } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostSchema } from "@shared/schema";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 // Fix Leaflet marker icons
@@ -86,8 +87,8 @@ export default function SocialMap() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertPostSchema.pick({ content: true })),
-    defaultValues: { content: "" },
+    resolver: zodResolver(insertPostSchema.pick({ content: true, hideExactLocation: true })),
+    defaultValues: { content: "", hideExactLocation: false },
   });
 
   useEffect(() => {
@@ -287,6 +288,31 @@ export default function SocialMap() {
                   </FormItem>
                 )}
               />
+              
+              <FormField
+                control={form.control}
+                name="hideExactLocation"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel className="flex items-center gap-2">
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        Blur Location
+                      </FormLabel>
+                      <FormDescription>
+                        Hide your exact house location
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
               <Button type="submit" className="w-full h-11" disabled={postMutation.isPending}>
                 Post Update
               </Button>

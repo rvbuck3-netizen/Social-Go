@@ -29,7 +29,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPost(insertPost: InsertPost): Promise<Post> {
-    const [post] = await db.insert(posts).values(insertPost).returning();
+    let { latitude, longitude } = insertPost;
+    
+    if (insertPost.hideExactLocation) {
+      // Add a small random offset (approx 500m-1km) to fuzzy the location
+      latitude = latitude + (Math.random() - 0.5) * 0.01;
+      longitude = longitude + (Math.random() - 0.5) * 0.01;
+    }
+
+    const [post] = await db.insert(posts).values({
+      ...insertPost,
+      latitude,
+      longitude
+    }).returning();
     return post;
   }
 

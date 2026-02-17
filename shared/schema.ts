@@ -24,11 +24,15 @@ export const posts = pgTable("posts", {
   longitude: doublePrecision("longitude").notNull(),
   authorName: text("author_name").notNull(), // Simple auth for now
   createdAt: timestamp("created_at").defaultNow(),
+  isAnonymous: boolean("is_anonymous").default(false).notNull(),
+  hideExactLocation: boolean("hide_exact_location").default(false).notNull(),
 });
 
 export const insertPostSchema = createInsertSchema(posts).omit({ 
   id: true, 
   createdAt: true 
+}).extend({
+  hideExactLocation: z.boolean().default(false),
 });
 
 export type Post = typeof posts.$inferSelect;
