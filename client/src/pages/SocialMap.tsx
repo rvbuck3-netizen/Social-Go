@@ -38,25 +38,10 @@ function ZoomLabelScaler() {
   const map = useMap();
   useEffect(() => {
     const updateLabels = () => {
-      const zoom = map.getZoom();
       const labelsEl = map.getContainer().querySelector('.labels-layer') as HTMLElement | null;
       if (!labelsEl) return;
-      if (zoom <= 10) {
-        labelsEl.style.filter = 'brightness(4) contrast(6) saturate(0)';
-        labelsEl.style.opacity = '0.8';
-      } else if (zoom <= 12) {
-        labelsEl.style.filter = 'brightness(3.5) contrast(5) saturate(0)';
-        labelsEl.style.opacity = '0.85';
-      } else if (zoom <= 14) {
-        labelsEl.style.filter = 'brightness(3) contrast(4) saturate(0)';
-        labelsEl.style.opacity = '0.9';
-      } else if (zoom <= 16) {
-        labelsEl.style.filter = 'brightness(2.5) contrast(3.5) saturate(0)';
-        labelsEl.style.opacity = '0.95';
-      } else {
-        labelsEl.style.filter = 'brightness(2) contrast(3) saturate(0)';
-        labelsEl.style.opacity = '1';
-      }
+      labelsEl.style.filter = 'saturate(0) brightness(0.55) contrast(1.2)';
+      labelsEl.style.opacity = '0.85';
     };
     map.on('zoomend', updateLabels);
     updateLabels();
@@ -227,9 +212,11 @@ export default function SocialMap() {
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
           className="labels-layer"
           subdomains="abcd"
+          maxNativeZoom={13}
+          maxZoom={20}
         />
         <ZoomLabelScaler />
         <MapRecenter coords={userLocation} />
