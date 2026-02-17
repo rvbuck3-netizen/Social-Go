@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Switch } from "@/components/ui/switch";
@@ -9,14 +10,73 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Shield, ShieldCheck, Clock, Ban, LogOut, Bell, Eye, Moon, Info,
   MapPin, UserX, AlertTriangle, Lock, Fingerprint, MessageSquareWarning,
-  HeartHandshake, Phone, Mail, ChevronRight, Globe, Trash2, FileText, HelpCircle
+  HeartHandshake, Phone, Mail, ChevronRight, Globe, Trash2, FileText, HelpCircle,
+  Sun
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+function useLocalSetting(key: string, defaultValue: boolean): [boolean, (val: boolean) => void] {
+  const [value, setValue] = useState<boolean>(() => {
+    const stored = localStorage.getItem(`socialgo_${key}`);
+    if (stored !== null) return stored === "true";
+    return defaultValue;
+  });
+
+  const update = (val: boolean) => {
+    setValue(val);
+    localStorage.setItem(`socialgo_${key}`, String(val));
+  };
+
+  return [value, update];
+}
+
+function useDarkMode(): [boolean, (val: boolean) => void] {
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const stored = localStorage.getItem("socialgo_dark_mode");
+    if (stored !== null) return stored === "true";
+    return document.documentElement.classList.contains("dark");
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("socialgo_dark_mode", String(isDark));
+  }, [isDark]);
+
+  return [isDark, setIsDark];
+}
 
 export default function AppSettings() {
   const { toast } = useToast();
   const { data: user, isLoading } = useQuery<any>({
     queryKey: [api.users.me.path],
   });
+
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const [isDarkMode, setDarkMode] = useDarkMode();
+  const [showDistance, setShowDistance] = useLocalSetting("show_distance", true);
+  const [hideOnline, setHideOnline] = useLocalSetting("hide_online", false);
+  const [incognito, setIncognito] = useLocalSetting("incognito", false);
+  const [showSocials, setShowSocials] = useLocalSetting("show_socials", true);
+  const [showBio, setShowBio] = useLocalSetting("show_bio", true);
+  const [notifNearby, setNotifNearby] = useLocalSetting("notif_nearby", true);
+  const [notifInteractions, setNotifInteractions] = useLocalSetting("notif_interactions", true);
+  const [notifMessages, setNotifMessages] = useLocalSetting("notif_messages", true);
+  const [notifPromo, setNotifPromo] = useLocalSetting("notif_promo", false);
 
   const goModeMutation = useMutation({
     mutationFn: async (isGoMode: boolean) => {
@@ -27,17 +87,21 @@ export default function AppSettings() {
       });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, isGoMode) => {
       queryClient.invalidateQueries({ queryKey: [api.users.me.path] });
       toast({
-        title: "Go Mode Updated",
-        description: "Your visibility has been changed.",
+        title: isGoMode ? "Go Mode Activated" : "Go Mode Deactivated",
+        description: isGoMode ? "You're now visible to nearby people." : "Your location is now hidden.",
       });
     },
   });
 
   const handleComingSoon = (feature: string) => {
     toast({ title: "Coming Soon", description: `${feature} will be available in a future update.` });
+  };
+
+  const handleSignOut = () => {
+    window.location.href = "/api/logout";
   };
 
   if (isLoading) return (
@@ -85,7 +149,14 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-show-distance">Show distance</Label>
             <p className="text-xs text-muted-foreground">Let others see how far away you are</p>
           </div>
-          <Switch defaultChecked data-testid="switch-show-distance" />
+          <Switch
+            checked={showDistance}
+            onCheckedChange={(checked) => {
+              setShowDistance(checked);
+              toast({ title: checked ? "Distance visible" : "Distance hidden", description: "Your preference has been saved." });
+            }}
+            data-testid="switch-show-distance"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -93,7 +164,14 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-hide-online">Hide online status</Label>
             <p className="text-xs text-muted-foreground">Others won't see when you're active</p>
           </div>
-          <Switch data-testid="switch-hide-online" />
+          <Switch
+            checked={hideOnline}
+            onCheckedChange={(checked) => {
+              setHideOnline(checked);
+              toast({ title: checked ? "Online status hidden" : "Online status visible", description: "Your preference has been saved." });
+            }}
+            data-testid="switch-hide-online"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -101,7 +179,14 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-incognito">Incognito browsing</Label>
             <p className="text-xs text-muted-foreground">View profiles without them knowing</p>
           </div>
-          <Switch data-testid="switch-incognito" />
+          <Switch
+            checked={incognito}
+            onCheckedChange={(checked) => {
+              setIncognito(checked);
+              toast({ title: checked ? "Incognito mode on" : "Incognito mode off", description: "Your preference has been saved." });
+            }}
+            data-testid="switch-incognito"
+          />
         </div>
       </div>
 
@@ -125,7 +210,14 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-show-socials">Show social links</Label>
             <p className="text-xs text-muted-foreground">Display your Instagram, Twitter, etc. on your profile</p>
           </div>
-          <Switch defaultChecked data-testid="switch-show-socials" />
+          <Switch
+            checked={showSocials}
+            onCheckedChange={(checked) => {
+              setShowSocials(checked);
+              toast({ title: checked ? "Social links visible" : "Social links hidden", description: "Your preference has been saved." });
+            }}
+            data-testid="switch-show-socials"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -133,7 +225,14 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-show-bio">Show bio on map</Label>
             <p className="text-xs text-muted-foreground">Display your bio when people tap your marker</p>
           </div>
-          <Switch defaultChecked data-testid="switch-show-bio" />
+          <Switch
+            checked={showBio}
+            onCheckedChange={(checked) => {
+              setShowBio(checked);
+              toast({ title: checked ? "Bio visible on map" : "Bio hidden from map", description: "Your preference has been saved." });
+            }}
+            data-testid="switch-show-bio"
+          />
         </div>
       </div>
 
@@ -180,7 +279,11 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-notif-nearby">Nearby activity</Label>
             <p className="text-xs text-muted-foreground">When new people appear near you</p>
           </div>
-          <Switch defaultChecked data-testid="switch-notif-nearby" />
+          <Switch
+            checked={notifNearby}
+            onCheckedChange={setNotifNearby}
+            data-testid="switch-notif-nearby"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -188,7 +291,11 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-notif-interactions">Interactions & Shoutouts</Label>
             <p className="text-xs text-muted-foreground">When someone interacts with your profile or sends a Shoutout</p>
           </div>
-          <Switch defaultChecked data-testid="switch-notif-likes" />
+          <Switch
+            checked={notifInteractions}
+            onCheckedChange={setNotifInteractions}
+            data-testid="switch-notif-interactions"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -196,7 +303,11 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-notif-messages">Messages</Label>
             <p className="text-xs text-muted-foreground">When you receive a new message</p>
           </div>
-          <Switch defaultChecked data-testid="switch-notif-messages" />
+          <Switch
+            checked={notifMessages}
+            onCheckedChange={setNotifMessages}
+            data-testid="switch-notif-messages"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -204,7 +315,11 @@ export default function AppSettings() {
             <Label className="text-sm" data-testid="label-notif-promo">Promotions & tips</Label>
             <p className="text-xs text-muted-foreground">Special offers and app tips</p>
           </div>
-          <Switch data-testid="switch-notif-promo" />
+          <Switch
+            checked={notifPromo}
+            onCheckedChange={setNotifPromo}
+            data-testid="switch-notif-promo"
+          />
         </div>
       </div>
 
@@ -215,11 +330,21 @@ export default function AppSettings() {
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <Label className="text-sm" data-testid="label-dark-mode">Dark mode</Label>
-            <p className="text-xs text-muted-foreground">Use dark theme throughout the app</p>
+          <div className="space-y-0.5 flex items-center gap-2">
+            {isDarkMode ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-amber-500" />}
+            <div>
+              <Label className="text-sm" data-testid="label-dark-mode">Dark mode</Label>
+              <p className="text-xs text-muted-foreground">Use dark theme throughout the app</p>
+            </div>
           </div>
-          <Switch data-testid="switch-dark-mode" />
+          <Switch
+            checked={isDarkMode}
+            onCheckedChange={(checked) => {
+              setDarkMode(checked);
+              toast({ title: checked ? "Dark mode enabled" : "Light mode enabled" });
+            }}
+            data-testid="switch-dark-mode"
+          />
         </div>
       </div>
 
@@ -373,7 +498,7 @@ export default function AppSettings() {
 
         <button
           className="flex items-center justify-between gap-2 w-full py-2.5 text-destructive"
-          onClick={() => handleComingSoon("Delete account")}
+          onClick={() => setShowDeleteDialog(true)}
           data-testid="button-delete-account"
         >
           <div className="flex items-center gap-2">
@@ -385,18 +510,60 @@ export default function AppSettings() {
       </div>
 
       <div className="px-4 pt-4 pb-2">
-        <a href="/api/logout">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-destructive" data-testid="button-sign-out">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
-        </a>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-destructive"
+          onClick={() => setShowSignOutDialog(true)}
+          data-testid="button-sign-out"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </Button>
       </div>
 
       <div className="px-4 pb-6 pt-2">
         <p className="text-[10px] text-muted-foreground text-center">Social Go v1.0</p>
         <p className="text-[10px] text-muted-foreground text-center">Built to help people connect safely</p>
       </div>
+
+      <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You'll need to sign back in to access your profile and see nearby people.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-signout">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOut} data-testid="button-confirm-signout">Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All your data, posts, and profile information will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDeleteDialog(false);
+                handleComingSoon("Account deletion");
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
