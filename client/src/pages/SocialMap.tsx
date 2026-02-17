@@ -226,19 +226,44 @@ export default function SocialMap() {
         <Marker 
           position={userLocation}
           icon={new L.DivIcon({
-            html: `<div class="user-marker-you">
-                     <img src="${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=You'}" />
-                   </div>`,
+            html: user?.isGoMode
+              ? `<div class="nearby-user-marker go-mode-self">
+                   <img src="${user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'You'}`}" />
+                 </div>`
+              : `<div class="user-marker-you">
+                   <img src="${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=You'}" />
+                 </div>`,
             className: "",
-            iconSize: [44, 44],
+            iconSize: user?.isGoMode ? [44, 44] : [44, 44],
             iconAnchor: [22, 22]
           })}
         >
           <Popup className="modern-popup">
-            <div className="px-4 py-3 flex items-center gap-2.5">
-              <Navigation className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-              <span className="text-sm font-medium">You are here</span>
-            </div>
+            {user?.isGoMode ? (
+              <div className="min-w-[200px]">
+                <div className="flex items-center gap-3 px-4 py-3.5">
+                  <Avatar className="h-11 w-11 ring-2 ring-green-500/40">
+                    <AvatarImage src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'You'}`} />
+                    <AvatarFallback className="bg-white/10 text-white">{user?.username?.[0] || 'Y'}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold text-sm">{user?.username || 'You'}</p>
+                    <p className="popup-label text-[11px] text-green-400">Go Mode Active</p>
+                  </div>
+                </div>
+                {user?.bio && (
+                  <>
+                    <div className="popup-divider border-t mx-4" />
+                    <p className="text-[12px] text-white/70 px-4 py-2.5">{user.bio}</p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="px-4 py-3 flex items-center gap-2.5">
+                <Navigation className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                <span className="text-sm font-medium">You are here</span>
+              </div>
+            )}
           </Popup>
         </Marker>
 
