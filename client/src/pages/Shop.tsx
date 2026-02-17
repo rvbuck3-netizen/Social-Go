@@ -29,9 +29,9 @@ const subscriptionPlans = [
     iconColor: "text-yellow-500",
     badgeColor: "bg-yellow-500/10 text-yellow-600",
     prices: {
-      weekly: { amount: "$3.49", perMonth: "$13.96/mo" } as PlanPricing,
-      monthly: { amount: "$9.99", perMonth: "$9.99/mo" } as PlanPricing,
-      "6month": { amount: "$29.99", perMonth: "$5.00/mo", save: "Save 50%" } as PlanPricing,
+      weekly: { amount: "$2.99", perMonth: "$11.96/mo" } as PlanPricing,
+      monthly: { amount: "$7.99", perMonth: "$7.99/mo" } as PlanPricing,
+      "6month": { amount: "$19.99", perMonth: "$3.33/mo", save: "Save 58%" } as PlanPricing,
     },
     features: [
       { icon: Heart, text: "Unlimited likes" },
@@ -51,9 +51,9 @@ const subscriptionPlans = [
     badgeColor: "bg-purple-500/10 text-purple-600",
     popular: true,
     prices: {
-      weekly: { amount: "$6.49", perMonth: "$25.96/mo" } as PlanPricing,
-      monthly: { amount: "$17.49", perMonth: "$17.49/mo" } as PlanPricing,
-      "6month": { amount: "$59.99", perMonth: "$10.00/mo", save: "Save 43%" } as PlanPricing,
+      weekly: { amount: "$4.99", perMonth: "$19.96/mo" } as PlanPricing,
+      monthly: { amount: "$12.99", perMonth: "$12.99/mo" } as PlanPricing,
+      "6month": { amount: "$39.99", perMonth: "$6.67/mo", save: "Save 49%" } as PlanPricing,
     },
     features: [
       { icon: Heart, text: "Everything in Go+" },
