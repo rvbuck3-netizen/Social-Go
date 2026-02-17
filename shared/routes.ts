@@ -25,6 +25,7 @@ export const api = {
           id: z.number(),
           username: z.string(),
           isGoMode: z.boolean(),
+          goModeExpiresAt: z.string().nullable(),
           bio: z.string().nullable(),
           avatar: z.string().nullable(),
           instagram: z.string().nullable(),
@@ -62,6 +63,39 @@ export const api = {
           latitude: z.number(),
           longitude: z.number(),
         })),
+      },
+    },
+    block: {
+      method: 'POST' as const,
+      path: '/api/users/block' as const,
+      input: z.object({
+        blockedId: z.number(),
+        reason: z.string().optional(),
+      }),
+      responses: {
+        200: z.object({ success: z.boolean() }),
+      },
+    },
+    unblock: {
+      method: 'POST' as const,
+      path: '/api/users/unblock' as const,
+      input: z.object({
+        blockedId: z.number(),
+      }),
+      responses: {
+        200: z.object({ success: z.boolean() }),
+      },
+    },
+    report: {
+      method: 'POST' as const,
+      path: '/api/users/report' as const,
+      input: z.object({
+        reportedUserId: z.number(),
+        reason: z.enum(["harassment", "inappropriate", "spam", "stalking", "other"]),
+        details: z.string().optional(),
+      }),
+      responses: {
+        200: z.object({ success: z.boolean() }),
       },
     },
   },

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut, Shield, Instagram, Twitter, Globe, Grid3X3, Settings } from "lucide-react";
+import { User, LogOut, Shield, ShieldCheck, Instagram, Twitter, Globe, Settings, Clock, Ban } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
@@ -133,7 +133,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="px-4 py-3 border-y">
+      <div className="px-4 py-3 border-y space-y-3">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <Label className="text-sm font-semibold flex items-center gap-2">
@@ -150,6 +150,30 @@ export default function Profile() {
             disabled={goModeMutation.isPending}
             data-testid="switch-go-mode"
           />
+        </div>
+        {user?.isGoMode && user?.goModeExpiresAt && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1" data-testid="text-go-mode-expiry">
+            <Clock className="h-3 w-3" />
+            Auto-expires {new Date(user.goModeExpiresAt).toLocaleTimeString()} for your safety
+          </p>
+        )}
+      </div>
+
+      <div className="px-4 py-3 border-b">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Safety</p>
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <ShieldCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground">Your exact location is never shown. Nearby users see an approximate area only.</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Clock className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground">Go Mode automatically turns off after 2 hours to protect your privacy.</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Ban className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground">Block or report anyone directly from the map. Blocked users can't see you.</p>
+          </div>
         </div>
       </div>
 

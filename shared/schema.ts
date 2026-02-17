@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   isGoMode: boolean("is_go_mode").default(false).notNull(),
+  goModeExpiresAt: timestamp("go_mode_expires_at"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   lastSeen: timestamp("last_seen").defaultNow(),
@@ -25,10 +26,28 @@ export const posts = pgTable("posts", {
   content: text("content").notNull(),
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
-  authorName: text("author_name").notNull(), // Simple auth for now
+  authorName: text("author_name").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   isAnonymous: boolean("is_anonymous").default(false).notNull(),
   hideExactLocation: boolean("hide_exact_location").default(false).notNull(),
+});
+
+export const blockedUsers = pgTable("blocked_users", {
+  id: serial("id").primaryKey(),
+  blockerId: integer("blocker_id").notNull(),
+  blockedId: integer("blocked_id").notNull(),
+  reason: text("reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const reports = pgTable("reports", {
+  id: serial("id").primaryKey(),
+  reporterId: integer("reporter_id").notNull(),
+  reportedUserId: integer("reported_user_id").notNull(),
+  reason: text("reason").notNull(),
+  details: text("details"),
+  status: text("status").default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertPostSchema = createInsertSchema(posts).omit({ 
@@ -39,5 +58,18 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   isAnonymous: z.boolean().optional().default(false),
 });
 
+export const insertBlockSchema = createInsertSchema(blockedUsers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+});
+
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof insertPostSchema>;
+export type BlockedUser = typeof blockedUsers.$inferSelect;
+export type Report = typeof reports.$inferSelect;

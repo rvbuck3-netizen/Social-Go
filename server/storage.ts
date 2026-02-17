@@ -3,10 +3,21 @@ import { db } from "./db";
 import {
   posts,
   users,
+  blockedUsers,
+  reports,
   type InsertPost,
   type Post,
 } from "@shared/schema";
-import { eq, desc, and, isNotNull, gt, sql } from "drizzle-orm";
+import { eq, desc, and, isNotNull, ne, sql } from "drizzle-orm";
+
+const GO_MODE_DURATION_HOURS = 2;
+const LOCATION_FUZZ_AMOUNT = 0.003;
+
+function fuzzLocation(lat: number, lng: number): { latitude: number; longitude: number } {
+  const latOffset = (Math.random() - 0.5) * LOCATION_FUZZ_AMOUNT;
+  const lngOffset = (Math.random() - 0.5) * LOCATION_FUZZ_AMOUNT;
+  return { latitude: lat + latOffset, longitude: lng + lngOffset };
+}
 
 export interface IStorage {
   getUser(id: number): Promise<typeof users.$inferSelect | undefined>;
@@ -21,13 +32,27 @@ export interface IStorage {
     twitter?: string,
     website?: string
   }): Promise<void>;
-  getNearbyUsers(): Promise<(typeof users.$inferSelect)[]>;
+  getNearbyUsers(requestingUserId: number): Promise<(typeof users.$inferSelect)[]>;
   activateBoost(userId: number, durationHours: number): Promise<Date>;
+  blockUser(blockerId: number, blockedId: number, reason?: string): Promise<void>;
+  unblockUser(blockerId: number, blockedId: number): Promise<void>;
+  getBlockedUserIds(userId: number): Promise<number[]>;
+  reportUser(reporterId: number, reportedUserId: number, reason: string, details?: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<typeof users.$inferSelect | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    if (user) {
+      if (user.isGoMode && user.goModeExpiresAt && new Date() > user.goModeExpiresAt) {
+        await db.update(users).set({ isGoMode: false, goModeExpiresAt: null }).where(eq(users.id, id));
+        return { ...user, isGoMode: false, goModeExpiresAt: null };
+      }
+      if (user.isBoosted && user.boostExpiresAt && new Date() > user.boostExpiresAt) {
+        await db.update(users).set({ isBoosted: false, boostExpiresAt: null }).where(eq(users.id, id));
+        return { ...user, isBoosted: false, boostExpiresAt: null };
+      }
+    }
     return user;
   }
 
@@ -39,7 +64,6 @@ export class DatabaseStorage implements IStorage {
     let { latitude, longitude } = insertPost;
     
     if (insertPost.hideExactLocation) {
-      // Add a small random offset (approx 500m-1km) to fuzzy the location
       latitude = latitude + (Math.random() - 0.5) * 0.01;
       longitude = longitude + (Math.random() - 0.5) * 0.01;
     }
@@ -61,35 +85,53 @@ export class DatabaseStorage implements IStorage {
     twitter?: string,
     website?: string
   }): Promise<void> {
-    await db.update(users)
-      .set({
-        ...(status.isGoMode !== undefined && { isGoMode: status.isGoMode }),
-        ...(status.latitude !== undefined && { latitude: sql`${status.latitude}::double precision` }),
-        ...(status.longitude !== undefined && { longitude: sql`${status.longitude}::double precision` }),
-        ...(status.bio !== undefined && { bio: status.bio }),
-        ...(status.instagram !== undefined && { instagram: status.instagram }),
-        ...(status.twitter !== undefined && { twitter: status.twitter }),
-        ...(status.website !== undefined && { website: status.website }),
-        lastSeen: new Date(),
-      })
-      .where(eq(users.id, id));
+    const updateData: any = { lastSeen: new Date() };
+
+    if (status.isGoMode !== undefined) {
+      updateData.isGoMode = status.isGoMode;
+      if (status.isGoMode) {
+        updateData.goModeExpiresAt = new Date(Date.now() + GO_MODE_DURATION_HOURS * 60 * 60 * 1000);
+      } else {
+        updateData.goModeExpiresAt = null;
+      }
+    }
+    if (status.latitude !== undefined) updateData.latitude = sql`${status.latitude}::double precision`;
+    if (status.longitude !== undefined) updateData.longitude = sql`${status.longitude}::double precision`;
+    if (status.bio !== undefined) updateData.bio = status.bio;
+    if (status.instagram !== undefined) updateData.instagram = status.instagram;
+    if (status.twitter !== undefined) updateData.twitter = status.twitter;
+    if (status.website !== undefined) updateData.website = status.website;
+
+    await db.update(users).set(updateData).where(eq(users.id, id));
   }
 
-  async getNearbyUsers(): Promise<(typeof users.$inferSelect)[]> {
-    // In a real app, we'd use a distance calculation. For MVP, just return active "Go Mode" users.
-    const results = await db.select()
-    .from(users)
-    .where(and(
-      eq(users.isGoMode, true),
-      isNotNull(users.latitude),
-      isNotNull(users.longitude)
-    ));
+  async getNearbyUsers(requestingUserId: number): Promise<(typeof users.$inferSelect)[]> {
+    const blockedIds = await this.getBlockedUserIds(requestingUserId);
     
-    return results.map(r => ({
-      ...r,
-      latitude: r.latitude!,
-      longitude: r.longitude!
-    }));
+    const results = await db.select()
+      .from(users)
+      .where(and(
+        eq(users.isGoMode, true),
+        isNotNull(users.latitude),
+        isNotNull(users.longitude),
+        ne(users.id, requestingUserId)
+      ));
+    
+    const now = new Date();
+    return results
+      .filter(r => {
+        if (blockedIds.includes(r.id)) return false;
+        if (r.goModeExpiresAt && now > r.goModeExpiresAt) return false;
+        return true;
+      })
+      .map(r => {
+        const fuzzed = fuzzLocation(r.latitude!, r.longitude!);
+        return {
+          ...r,
+          latitude: fuzzed.latitude,
+          longitude: fuzzed.longitude,
+        };
+      });
   }
 
   async activateBoost(userId: number, durationHours: number): Promise<Date> {
@@ -101,6 +143,30 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId));
     return expiresAt;
+  }
+
+  async blockUser(blockerId: number, blockedId: number, reason?: string): Promise<void> {
+    const existing = await db.select().from(blockedUsers)
+      .where(and(eq(blockedUsers.blockerId, blockerId), eq(blockedUsers.blockedId, blockedId)));
+    if (existing.length === 0) {
+      await db.insert(blockedUsers).values({ blockerId, blockedId, reason });
+    }
+  }
+
+  async unblockUser(blockerId: number, blockedId: number): Promise<void> {
+    await db.delete(blockedUsers)
+      .where(and(eq(blockedUsers.blockerId, blockerId), eq(blockedUsers.blockedId, blockedId)));
+  }
+
+  async getBlockedUserIds(userId: number): Promise<number[]> {
+    const blocked = await db.select({ blockedId: blockedUsers.blockedId })
+      .from(blockedUsers)
+      .where(eq(blockedUsers.blockerId, userId));
+    return blocked.map(b => b.blockedId);
+  }
+
+  async reportUser(reporterId: number, reportedUserId: number, reason: string, details?: string): Promise<void> {
+    await db.insert(reports).values({ reporterId, reportedUserId, reason, details });
   }
 }
 

@@ -11,7 +11,6 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Seed the database on startup
   await seedDatabase();
 
   app.get(api.users.me.path, async (req, res) => {
@@ -39,8 +38,47 @@ export async function registerRoutes(
   });
 
   app.get(api.users.nearby.path, async (req, res) => {
-    const nearby = await storage.getNearbyUsers();
+    const nearby = await storage.getNearbyUsers(1);
     res.json(nearby);
+  });
+
+  app.post(api.users.block.path, async (req, res) => {
+    try {
+      const { blockedId, reason } = api.users.block.input.parse(req.body);
+      await storage.blockUser(1, blockedId, reason);
+      res.json({ success: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.users.unblock.path, async (req, res) => {
+    try {
+      const { blockedId } = api.users.unblock.input.parse(req.body);
+      await storage.unblockUser(1, blockedId);
+      res.json({ success: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.users.report.path, async (req, res) => {
+    try {
+      const { reportedUserId, reason, details } = api.users.report.input.parse(req.body);
+      await storage.reportUser(1, reportedUserId, reason, details);
+      res.json({ success: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   app.post(api.shop.purchaseBoost.path, async (req, res) => {

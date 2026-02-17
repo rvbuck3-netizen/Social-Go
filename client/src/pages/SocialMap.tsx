@@ -6,7 +6,7 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Navigation, Instagram, Twitter, Globe, EyeOff } from "lucide-react";
+import { Plus, Navigation, Instagram, Twitter, Globe, EyeOff, ShieldAlert, Ban, Flag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -85,6 +85,35 @@ export default function SocialMap() {
     },
   });
 
+  const blockMutation = useMutation({
+    mutationFn: async (blockedId: number) => {
+      const res = await fetch(api.users.block.path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockedId }),
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.users.nearby.path] });
+      toast({ title: "User blocked", description: "They won't appear on your map anymore." });
+    },
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: async ({ reportedUserId, reason }: { reportedUserId: number, reason: string }) => {
+      const res = await fetch(api.users.report.path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportedUserId, reason }),
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Report submitted", description: "We'll review this shortly. Thank you for keeping Social Go safe." });
+    },
+  });
+
   const form = useForm({
     resolver: zodResolver(insertPostSchema.pick({ content: true, hideExactLocation: true })),
     defaultValues: { content: "", hideExactLocation: false },
@@ -139,12 +168,8 @@ export default function SocialMap() {
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
         <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
-          opacity={0.6}
-        />
-        <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-          opacity={0.8}
+          opacity={0.7}
         />
         <MapRecenter coords={userLocation} />
         
@@ -242,6 +267,28 @@ export default function SocialMap() {
                     )}
                   </div>
                 )}
+
+                <div className="flex items-center gap-1 pt-2 border-t border-border">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => blockMutation.mutate(u.id)}
+                    disabled={blockMutation.isPending}
+                    data-testid={`button-block-${u.id}`}
+                  >
+                    <Ban className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => reportMutation.mutate({ reportedUserId: u.id, reason: "stalking" })}
+                    disabled={reportMutation.isPending}
+                    data-testid={`button-report-${u.id}`}
+                  >
+                    <Flag className="h-4 w-4 text-destructive" />
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground ml-auto">Block / Report</span>
+                </div>
               </div>
             </Popup>
           </Marker>
