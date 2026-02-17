@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { User, Instagram, Twitter, Globe, ChevronDown, ChevronUp } from "lucide-react";
-import { SiTiktok, SiSnapchat, SiLinkedin } from "react-icons/si";
+import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
@@ -29,6 +29,7 @@ export default function Profile() {
       tiktok: user?.tiktok || "",
       snapchat: user?.snapchat || "",
       linkedin: user?.linkedin || "",
+      facebook: user?.facebook || "",
       website: user?.website || "",
     },
   });
@@ -42,6 +43,7 @@ export default function Profile() {
         tiktok: user.tiktok || "",
         snapchat: user.snapchat || "",
         linkedin: user.linkedin || "",
+        facebook: user.facebook || "",
         website: user.website || "",
       });
     }
@@ -68,7 +70,7 @@ export default function Profile() {
     </div>
   );
 
-  const hasSocials = user?.instagram || user?.twitter || user?.tiktok || user?.snapchat || user?.linkedin || user?.website;
+  const hasSocials = user?.instagram || user?.twitter || user?.tiktok || user?.snapchat || user?.linkedin || user?.facebook || user?.website;
 
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="profile-container">
@@ -127,6 +129,11 @@ export default function Profile() {
             {user?.linkedin && (
               <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-linkedin">
                 <SiLinkedin className="h-4 w-4" />
+              </a>
+            )}
+            {user?.facebook && (
+              <a href={`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-facebook">
+                <SiFacebook className="h-4 w-4" />
               </a>
             )}
             {user?.website && (
@@ -237,6 +244,20 @@ export default function Profile() {
                           </FormLabel>
                           <FormControl>
                             <Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="facebook"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1.5 text-xs">
+                            <SiFacebook className="h-3.5 w-3.5 text-blue-500" /> Facebook
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="username or profile ID" className="text-sm" {...field} data-testid="input-facebook" />
                           </FormControl>
                         </FormItem>
                       )}

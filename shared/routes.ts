@@ -33,6 +33,7 @@ export const api = {
           tiktok: z.string().nullable(),
           snapchat: z.string().nullable(),
           linkedin: z.string().nullable(),
+          facebook: z.string().nullable(),
           website: z.string().nullable(),
           isBoosted: z.boolean(),
           boostExpiresAt: z.string().nullable(),
@@ -53,6 +54,7 @@ export const api = {
         tiktok: z.string().optional(),
         snapchat: z.string().optional(),
         linkedin: z.string().optional(),
+        facebook: z.string().optional(),
         website: z.string().optional(),
       }),
       responses: {

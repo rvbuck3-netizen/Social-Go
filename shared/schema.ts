@@ -18,6 +18,7 @@ export const users = pgTable("users", {
   tiktok: text("tiktok"),
   snapchat: text("snapchat"),
   linkedin: text("linkedin"),
+  facebook: text("facebook"),
   website: text("website"),
   isBoosted: boolean("is_boosted").default(false).notNull(),
   boostExpiresAt: timestamp("boost_expires_at"),
