@@ -82,9 +82,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPost(insertPost: any, authorUserId: string): Promise<Post> {
-    let { latitude, longitude } = insertPost;
+    let latitude = insertPost.latitude ?? null;
+    let longitude = insertPost.longitude ?? null;
     
-    if (insertPost.hideExactLocation) {
+    if (latitude != null && longitude != null && insertPost.hideExactLocation) {
       latitude = latitude + (Math.random() - 0.5) * 0.01;
       longitude = longitude + (Math.random() - 0.5) * 0.01;
     }

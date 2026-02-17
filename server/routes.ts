@@ -126,6 +126,11 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const input = api.posts.create.input.parse(req.body);
+      const profile = await storage.getProfile(userId);
+      if (profile && !profile.isGoMode) {
+        input.latitude = undefined;
+        input.longitude = undefined;
+      }
       const post = await storage.createPost(input, userId);
       res.status(201).json(post);
     } catch (err) {

@@ -242,7 +242,7 @@ export default function SocialMap() {
           </Popup>
         </Marker>
 
-        {posts?.map((post) => (
+        {posts?.filter((post) => post.latitude != null && post.longitude != null).map((post) => (
           <Marker 
             key={post.id} 
             position={[post.latitude, post.longitude]}
@@ -385,10 +385,35 @@ export default function SocialMap() {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Share a location update</DialogTitle>
+            <DialogTitle>Share an update</DialogTitle>
           </DialogHeader>
+
+          <div className={cn(
+            "flex items-center gap-3 p-3 rounded-lg border",
+            user?.isGoMode ? "bg-green-500/10 border-green-500/20" : "bg-muted/50 border-border/50"
+          )} data-testid="post-location-status">
+            <div className={cn(
+              "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+              user?.isGoMode ? "bg-green-500/20" : "bg-muted"
+            )}>
+              {user?.isGoMode ? (
+                <Navigation className="h-4 w-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+            <div>
+              <p className={cn("text-xs font-semibold", user?.isGoMode ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}>
+                {user?.isGoMode ? "Go Mode — location will be shared" : "Away Mode — location hidden"}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {user?.isGoMode ? "Your post will appear on the map" : "Your post will appear in the feed only"}
+              </p>
+            </div>
+          </div>
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => postMutation.mutate(data))} className="space-y-4 pt-4">
+            <form onSubmit={form.handleSubmit((data) => postMutation.mutate(data))} className="space-y-4 pt-2">
               <FormField
                 control={form.control}
                 name="content"
@@ -406,33 +431,35 @@ export default function SocialMap() {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="hideExactLocation"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between gap-2 rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel className="flex items-center gap-2">
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        Blur Location
-                      </FormLabel>
-                      <FormDescription>
-                        Hide your exact address
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="switch-blur-location"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              {user?.isGoMode && (
+                <FormField
+                  control={form.control}
+                  name="hideExactLocation"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between gap-2 rounded-lg border p-3">
+                      <div className="space-y-0.5">
+                        <FormLabel className="flex items-center gap-2">
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          Blur Location
+                        </FormLabel>
+                        <FormDescription>
+                          Hide your exact address
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          data-testid="switch-blur-location"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <Button type="submit" className="w-full" disabled={postMutation.isPending} data-testid="button-submit-post">
-                Post Update
+                {postMutation.isPending ? "Posting..." : "Post Update"}
               </Button>
             </form>
           </Form>

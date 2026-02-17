@@ -31,8 +31,8 @@ export const profiles = pgTable("profiles", {
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
-  latitude: doublePrecision("latitude").notNull(),
-  longitude: doublePrecision("longitude").notNull(),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   authorName: text("author_name").notNull(),
   authorUserId: varchar("author_user_id"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -63,6 +63,8 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   createdAt: true,
   authorUserId: true,
 }).extend({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   hideExactLocation: z.boolean().optional().default(false),
   isAnonymous: z.boolean().optional().default(false),
 });

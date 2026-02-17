@@ -120,8 +120,17 @@ export default function Feed() {
                   </div>
 
                   <div className="flex items-center gap-1 mt-0.5 mb-1.5">
-                    <MapPin className="h-3 w-3 text-primary/70" />
-                    <span className="text-[11px] text-primary/70 font-medium">{getVibe(post.id)}</span>
+                    {post.latitude != null && post.longitude != null ? (
+                      <>
+                        <MapPin className="h-3 w-3 text-primary/70" />
+                        <span className="text-[11px] text-primary/70 font-medium">{getVibe(post.id)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Compass className="h-3 w-3 text-muted-foreground/70" />
+                        <span className="text-[11px] text-muted-foreground/70 font-medium">Shared an update</span>
+                      </>
+                    )}
                   </div>
 
                   <p className="text-[15px] leading-relaxed" data-testid={`text-content-${post.id}`}>{post.content}</p>
