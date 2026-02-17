@@ -185,8 +185,8 @@ export default function AppSettings() {
 
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <Label className="text-sm" data-testid="label-notif-likes">Likes & Roses</Label>
-            <p className="text-xs text-muted-foreground">When someone likes or sends you a Rose</p>
+            <Label className="text-sm" data-testid="label-notif-interactions">Interactions & Shoutouts</Label>
+            <p className="text-xs text-muted-foreground">When someone interacts with your profile or sends a Shoutout</p>
           </div>
           <Switch defaultChecked data-testid="switch-notif-likes" />
         </div>

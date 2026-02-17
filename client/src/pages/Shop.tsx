@@ -61,7 +61,7 @@ const subscriptionPlans = [
       { icon: MessageCircle, text: "Message anyone nearby" },
       { icon: Eye, text: "See who's interested in you" },
       { icon: Zap, text: "3 free Boosts per month" },
-      { icon: Star, text: "5 Roses per week" },
+      { icon: Star, text: "5 Shoutouts per week" },
     ],
   },
 ];
@@ -99,11 +99,11 @@ const boostProducts = [
   },
 ];
 
-const rosePacks = [
-  { id: "rose-1", amount: 1, price: "$1.99" },
-  { id: "rose-3", amount: 3, price: "$4.99", priceEach: "$1.66 each" },
-  { id: "rose-5", amount: 5, price: "$7.49", priceEach: "$1.50 each", popular: true },
-  { id: "rose-15", amount: 15, price: "$17.49", priceEach: "$1.17 each" },
+const shoutoutPacks = [
+  { id: "shoutout-1", amount: 1, price: "$1.99" },
+  { id: "shoutout-3", amount: 3, price: "$4.99", priceEach: "$1.66 each" },
+  { id: "shoutout-5", amount: 5, price: "$7.49", priceEach: "$1.50 each", popular: true },
+  { id: "shoutout-15", amount: 15, price: "$17.49", priceEach: "$1.17 each" },
 ];
 
 const tokenPacks = [
@@ -355,36 +355,36 @@ export default function Shop() {
 
       <div className="px-5 pt-6 pb-2">
         <button
-          onClick={() => toggleSection("roses")}
+          onClick={() => toggleSection("shoutouts")}
           className="w-full flex items-center gap-3 text-left py-1 mb-1"
-          data-testid="button-toggle-roses"
+          data-testid="button-toggle-shoutouts"
         >
-          <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
-            <Sparkles className="h-4.5 w-4.5 text-rose-500" />
+          <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <Sparkles className="h-4.5 w-4.5 text-orange-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold">Roses</p>
+            <p className="text-sm font-bold">Shoutouts</p>
             <p className="text-xs text-muted-foreground">Stand out from the crowd</p>
           </div>
           <div className={cn(
             "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
-            openSection === "roses" && "rotate-180"
+            openSection === "shoutouts" && "rotate-180"
           )}>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
         </button>
-        {openSection === "roses" && (
+        {openSection === "shoutouts" && (
           <div className="mt-3 space-y-1.5">
-            <p className="text-xs text-muted-foreground mb-3">Send a Rose to someone special. Your profile jumps to the top of their list — they'll notice you before anyone else.</p>
-            {rosePacks.map((pack) => (
+            <p className="text-xs text-muted-foreground mb-3">Send a Shoutout to get noticed. Your profile jumps to the top of their list — they'll see you before anyone else.</p>
+            {shoutoutPacks.map((pack) => (
               <div key={pack.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40">
-                <div className="h-9 w-9 rounded-lg bg-rose-500/10 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-4 w-4 text-rose-500" />
+                <div className="h-9 w-9 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-4 w-4 text-orange-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold" data-testid={`text-rose-${pack.id}`}>
-                      {pack.amount} {pack.amount === 1 ? "Rose" : "Roses"}
+                    <span className="text-sm font-semibold" data-testid={`text-shoutout-${pack.id}`}>
+                      {pack.amount} {pack.amount === 1 ? "Shoutout" : "Shoutouts"}
                     </span>
                     {pack.popular && (
                       <Badge variant="secondary" className="text-[9px]">Best value</Badge>
@@ -398,8 +398,8 @@ export default function Shop() {
                   size="sm"
                   variant="outline"
                   className="font-semibold"
-                  onClick={() => handlePurchase(`${pack.amount} Roses`)}
-                  data-testid={`button-buy-rose-${pack.id}`}
+                  onClick={() => handlePurchase(`${pack.amount} Shoutouts`)}
+                  data-testid={`button-buy-shoutout-${pack.id}`}
                 >
                   {pack.price}
                 </Button>
