@@ -343,122 +343,118 @@ export default function Profile() {
             />
 
             <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Socials</p>
-              <div className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="instagram"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5 text-xs">
-                        <Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="twitter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5 text-xs">
-                        <Twitter className="h-3.5 w-3.5 text-sky-500" /> Twitter / X
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+              <button
+                type="button"
+                className="flex items-center justify-between w-full py-1"
+                onClick={() => setShowMoreSocials(!showMoreSocials)}
+                data-testid="button-toggle-more-socials"
+              >
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Link Socials</p>
+                {showMoreSocials ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+              </button>
 
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground py-1"
-                  onClick={() => setShowMoreSocials(!showMoreSocials)}
-                  data-testid="button-toggle-more-socials"
-                >
-                  {showMoreSocials ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                  {showMoreSocials ? "Show less" : "More socials"}
-                </button>
-
-                {showMoreSocials && (
-                  <div className="space-y-3">
-                    <FormField
-                      control={form.control}
-                      name="tiktok"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1.5 text-xs">
-                            <SiTiktok className="h-3.5 w-3.5" /> TikTok
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="username" className="text-sm" {...field} data-testid="input-tiktok" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="snapchat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1.5 text-xs">
-                            <SiSnapchat className="h-3.5 w-3.5 text-yellow-400" /> Snapchat
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="username" className="text-sm" {...field} data-testid="input-snapchat" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="linkedin"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1.5 text-xs">
-                            <SiLinkedin className="h-3.5 w-3.5 text-blue-600" /> LinkedIn
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="facebook"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1.5 text-xs">
-                            <SiFacebook className="h-3.5 w-3.5 text-blue-500" /> Facebook
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="username or profile ID" className="text-sm" {...field} data-testid="input-facebook" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="website"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1.5 text-xs">
-                            <Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
+              {showMoreSocials && (
+                <div className="space-y-3 mt-3">
+                  <FormField
+                    control={form.control}
+                    name="instagram"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="twitter"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <Twitter className="h-3.5 w-3.5 text-sky-500" /> X
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="tiktok"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <SiTiktok className="h-3.5 w-3.5" /> TikTok
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-tiktok" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="snapchat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <SiSnapchat className="h-3.5 w-3.5 text-yellow-400" /> Snapchat
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-snapchat" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="linkedin"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <SiLinkedin className="h-3.5 w-3.5 text-blue-600" /> LinkedIn
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="facebook"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <SiFacebook className="h-3.5 w-3.5 text-blue-500" /> Facebook
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="username or profile ID" className="text-sm" {...field} data-testid="input-facebook" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5 text-xs">
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
 
             <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending} data-testid="button-save-profile">
