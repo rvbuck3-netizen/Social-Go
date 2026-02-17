@@ -234,7 +234,10 @@ export default function SocialMap() {
           })}
         >
           <Popup className="modern-popup">
-            <div className="p-2 text-sm font-medium">You are here</div>
+            <div className="px-4 py-3 flex items-center gap-2.5">
+              <Navigation className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+              <span className="text-sm font-medium">You are here</span>
+            </div>
           </Popup>
         </Marker>
 
@@ -252,14 +255,18 @@ export default function SocialMap() {
             })}
           >
             <Popup className="modern-popup">
-              <div className="p-3 min-w-[160px] max-w-[240px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <Avatar className="h-7 w-7">
+              <div className="min-w-[180px] max-w-[260px]">
+                <div className="flex items-center gap-2.5 px-4 py-3">
+                  <Avatar className="h-8 w-8 ring-1 ring-white/10">
                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
                   </Avatar>
-                  <span className="font-semibold text-xs">{post.authorName}</span>
+                  <div>
+                    <span className="font-semibold text-xs block">{post.authorName}</span>
+                    <span className="popup-label text-[10px]">Location update</span>
+                  </div>
                 </div>
-                <p className="text-sm leading-snug">{post.content}</p>
+                <div className="popup-divider border-t mx-4" />
+                <p className="text-[13px] leading-relaxed px-4 py-3">{post.content}</p>
               </div>
             </Popup>
           </Marker>
@@ -279,64 +286,60 @@ export default function SocialMap() {
             })}
           >
             <Popup className="modern-popup">
-              <div className="p-3 min-w-[180px]">
-                <div className="flex items-center gap-3 mb-2">
-                  <Avatar className="h-10 w-10 border-2 border-white/20">
+              <div className="min-w-[200px]">
+                <div className="flex items-center gap-3 px-4 py-3.5">
+                  <Avatar className="h-11 w-11 ring-2 ring-white/10">
                     <AvatarImage src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} />
-                    <AvatarFallback>{u.username[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-white/10 text-white">{u.username[0]}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-semibold text-sm">{u.username}</p>
-                    <p className="text-xs text-muted-foreground">Nearby</p>
+                    <p className="popup-label text-[11px]">Nearby</p>
                   </div>
                 </div>
                 
                 {(u.instagram || u.twitter || u.website) && (
-                  <div className="flex items-center gap-1 pt-2 border-t border-border">
+                  <div className="popup-divider border-t mx-4" />
+                )}
+                {(u.instagram || u.twitter || u.website) && (
+                  <div className="flex items-center gap-0.5 px-2 py-1.5">
                     {u.instagram && (
-                      <Button size="icon" variant="ghost" asChild>
-                        <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer">
-                          <Instagram className="h-4 w-4 text-pink-500" />
-                        </a>
-                      </Button>
+                      <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-instagram-${u.userId}`}>
+                        <Instagram className="h-4 w-4 text-pink-400" />
+                      </a>
                     )}
                     {u.twitter && (
-                      <Button size="icon" variant="ghost" asChild>
-                        <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer">
-                          <Twitter className="h-4 w-4 text-sky-500" />
-                        </a>
-                      </Button>
+                      <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-twitter-${u.userId}`}>
+                        <Twitter className="h-4 w-4 text-sky-400" />
+                      </a>
                     )}
                     {u.website && (
-                      <Button size="icon" variant="ghost" asChild>
-                        <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                        </a>
-                      </Button>
+                      <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-website-${u.userId}`}>
+                        <Globe className="h-4 w-4 text-white/50" />
+                      </a>
                     )}
                   </div>
                 )}
 
-                <div className="flex items-center gap-1 pt-2 border-t border-border">
-                  <Button
-                    size="icon"
-                    variant="ghost"
+                <div className="popup-divider border-t mx-4" />
+                <div className="flex items-center gap-0.5 px-2 py-1.5">
+                  <button
+                    className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10"
                     onClick={() => blockMutation.mutate(u.userId)}
                     disabled={blockMutation.isPending}
                     data-testid={`button-block-${u.userId}`}
                   >
-                    <Ban className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
+                    <Ban className="h-4 w-4 text-white/40" />
+                  </button>
+                  <button
+                    className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10"
                     onClick={() => reportMutation.mutate({ reportedUserId: u.userId, reason: "stalking" })}
                     disabled={reportMutation.isPending}
                     data-testid={`button-report-${u.userId}`}
                   >
-                    <Flag className="h-4 w-4 text-destructive" />
-                  </Button>
-                  <span className="text-[10px] text-muted-foreground ml-auto">Block / Report</span>
+                    <Flag className="h-4 w-4 text-red-400/70" />
+                  </button>
+                  <span className="popup-label text-[10px] ml-auto pr-2">Block / Report</span>
                 </div>
               </div>
             </Popup>
