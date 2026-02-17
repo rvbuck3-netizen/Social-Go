@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 - **State/Data Fetching**: TanStack React Query for server state management
 - **UI Components**: shadcn/ui component library (New York style) built on Radix UI primitives
 - **Styling**: Tailwind CSS with CSS custom properties for theming (light/dark mode support)
-- **Mapping**: Leaflet + react-leaflet for interactive maps
+- **Mapping**: Leaflet + react-leaflet with Esri World Imagery satellite tiles (real terrain/buildings view)
 - **Forms**: React Hook Form with Zod resolvers
 - **Build**: Vite for dev server and production builds
 - **Path aliases**: `@/` maps to `client/src/`, `@shared/` maps to `shared/`
