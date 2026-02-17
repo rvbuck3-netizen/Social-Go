@@ -1,0 +1,106 @@
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Text, Switch } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
+
+export default function App() {
+  const [location, setLocation] = useState(null);
+  const [goMode, setGoMode] = useState(false);
+
+  // Mock nearby users (will be real users later)
+  const nearbyUsers = [
+    {
+      id: "1",
+      name: "Alex",
+      latitude: 33.9285,
+      longitude: -117.5487,
+    },
+    {
+      id: "2",
+      name: "Jordan",
+      latitude: 33.9292,
+      longitude: -117.5501,
+    },
+  ];
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+
+      let loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc.coords);
+    })();
+  }, []);
+
+  if (!location) {
+    return (
+      <View style={styles.center}>
+        <Text>Loading location...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+      >
+        {/* You */}
+        <Marker
+          coordinate={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }}
+          title="You"
+        />
+
+        {/* Nearby users only if Go Mode is ON */}
+        {goMode &&
+          nearbyUsers.map((user) => (
+            <Marker
+              key={user.id}
+              coordinate={{
+                latitude: user.latitude,
+                longitude: user.longitude,
+              }}
+              title={user.name}
+            />
+          ))}
+      </MapView>
+
+      <View style={styles.goMode}>
+        <Text style={{ fontWeight: "bold" }}>Go Mode</Text>
+        <Switch value={goMode} onValueChange={setGoMode} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  map: { flex: 1 },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  goMode: {
+    position: "absolute",
+    bottom: 40,
+    left: 20,
+    right: 20,
+    padding: 15,
+    backgroundColor: "white",
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    elevation: 5,
+  },
+});
