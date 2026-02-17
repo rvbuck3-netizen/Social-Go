@@ -6,7 +6,7 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Navigation, Instagram, Twitter, Globe, EyeOff, ShieldAlert, Ban, Flag } from "lucide-react";
+import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, ShieldAlert, Ban, Flag, Locate } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -32,6 +32,34 @@ function MapRecenter({ coords }: { coords: [number, number] }) {
     map.setView(coords, map.getZoom());
   }, [coords, map]);
   return null;
+}
+
+function ZoomControls() {
+  const map = useMap();
+  return (
+    <div className="absolute right-4 top-16 z-[1000] flex flex-col gap-2">
+      <Button
+        size="icon"
+        variant="secondary"
+        className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
+        onClick={() => map.zoomIn()}
+        aria-label="Zoom in"
+        data-testid="button-zoom-in"
+      >
+        <Plus className="h-5 w-5" />
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
+        className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
+        onClick={() => map.zoomOut()}
+        aria-label="Zoom out"
+        data-testid="button-zoom-out"
+      >
+        <Minus className="h-5 w-5" />
+      </Button>
+    </div>
+  );
 }
 
 export default function SocialMap() {
@@ -173,6 +201,7 @@ export default function SocialMap() {
           className="labels-layer"
         />
         <MapRecenter coords={userLocation} />
+        <ZoomControls />
         
         <Marker 
           position={userLocation}
@@ -300,15 +329,16 @@ export default function SocialMap() {
         <Button 
           size="icon" 
           variant="secondary" 
-          className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm"
+          className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
           onClick={() => {
              navigator.geolocation.getCurrentPosition((pos) => {
                setUserLocation([pos.coords.latitude, pos.coords.longitude]);
              });
           }}
+          aria-label="Recenter on your location"
           data-testid="button-recenter"
         >
-          <Navigation className="h-5 w-5" />
+          <Locate className="h-5 w-5" />
         </Button>
       </div>
 
@@ -324,6 +354,7 @@ export default function SocialMap() {
           <Button 
             className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl z-[1000]"
             size="icon"
+            aria-label="Create a new post"
             data-testid="button-create-post"
           >
             <Plus className="h-7 w-7" />
