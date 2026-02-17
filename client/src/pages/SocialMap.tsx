@@ -128,7 +128,7 @@ export default function SocialMap() {
         zoomControl={false}
       >
         <TileLayer 
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         <MapRecenter coords={userLocation} />
@@ -145,7 +145,7 @@ export default function SocialMap() {
             iconAnchor: [20, 20]
           })}
         >
-          <Popup className="dark-popup">You are here</Popup>
+          <Popup className="modern-popup">You are here</Popup>
         </Marker>
 
         {/* Posts */}
@@ -154,7 +154,7 @@ export default function SocialMap() {
             key={post.id} 
             position={[post.latitude, post.longitude]}
             icon={new L.DivIcon({
-              html: `<div class="w-8 h-8 rounded-full border-2 border-white/20 bg-accent/80 backdrop-blur-sm shadow-lg overflow-hidden flex items-center justify-center">
+              html: `<div class="w-8 h-8 rounded-full border-2 border-primary/20 bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden flex items-center justify-center">
                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}" class="w-6 h-6 rounded-full" />
                      </div>`,
               className: "",
@@ -162,15 +162,15 @@ export default function SocialMap() {
               iconAnchor: [16, 16]
             })}
           >
-            <Popup className="dark-popup">
-              <div className="p-2 min-w-[140px] bg-background text-foreground rounded-lg border-0 shadow-none">
+            <Popup className="modern-popup">
+              <div className="p-2 min-w-[140px] bg-background text-foreground rounded-lg">
                 <div className="flex items-center gap-2 mb-2 border-b border-border pb-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
                   </Avatar>
                   <p className="font-bold text-xs">{post.authorName}</p>
                 </div>
-                <p className="text-sm leading-tight opacity-90">{post.content}</p>
+                <p className="text-sm leading-tight">{post.content}</p>
               </div>
             </Popup>
           </Marker>
@@ -182,7 +182,7 @@ export default function SocialMap() {
             key={u.id} 
             position={[u.latitude, u.longitude]}
             icon={new L.DivIcon({
-              html: `<div class="w-8 h-8 rounded-full border-2 border-primary bg-background/90 backdrop-blur-sm shadow-md overflow-hidden p-0.5">
+              html: `<div class="w-8 h-8 rounded-full border-2 border-primary bg-background shadow-md overflow-hidden p-0.5">
                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}" class="w-full h-full rounded-full" />
                      </div>`,
               className: "",
@@ -190,7 +190,7 @@ export default function SocialMap() {
               iconAnchor: [16, 16]
             })}
           >
-            <Popup className="dark-popup">{u.username} is nearby</Popup>
+            <Popup className="modern-popup">{u.username} is nearby</Popup>
           </Marker>
         ))}
       </MapContainer>
