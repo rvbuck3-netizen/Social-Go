@@ -182,8 +182,9 @@
 
 /* Make city/place labels clean and modern against satellite imagery */
 .leaflet-tile-pane .labels-layer {
-  filter: brightness(1.6) contrast(1.1) saturate(0);
+  filter: brightness(2) contrast(1.2) saturate(0);
   mix-blend-mode: screen;
+  opacity: 0.95;
 }
 
 /* Hide leaflet controls */

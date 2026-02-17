@@ -159,7 +159,7 @@ export default function SocialMap() {
     <div className="relative h-full w-full" data-testid="map-container">
       <MapContainer 
         center={userLocation} 
-        zoom={15} 
+        zoom={16} 
         className="h-full w-full z-0"
         zoomControl={false}
         attributionControl={false}
