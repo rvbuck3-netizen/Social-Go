@@ -1,151 +1,162 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart, ChevronDown, Shield, TrendingUp, Users, Clock } from "lucide-react";
+import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart, ChevronDown, Shield, TrendingUp, Users, Clock, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 type BillingPeriod = "weekly" | "monthly" | "6month";
 
-interface PlanPricing {
-  amount: string;
-  perMonth: string;
-  save?: string;
+interface StripePrice {
+  id: string;
+  unitAmount: number;
+  currency: string;
+  recurring: any;
+  metadata: Record<string, string>;
 }
 
-const subscriptionPlans = [
-  {
-    id: "go-plus",
-    name: "Go+",
-    tagline: "See more, connect more",
-    icon: Star,
-    iconColor: "text-amber-500",
-    badgeBg: "bg-amber-500/8",
-    prices: {
-      weekly: { amount: "$2.99", perMonth: "$11.96/mo" } as PlanPricing,
-      monthly: { amount: "$7.99", perMonth: "$7.99/mo" } as PlanPricing,
-      "6month": { amount: "$19.99", perMonth: "$3.33/mo", save: "Save 58%" } as PlanPricing,
-    },
-    features: [
-      { icon: Heart, text: "Unlimited interactions" },
-      { icon: Eye, text: "See who viewed your profile" },
-      { icon: Zap, text: "1 free Boost per month" },
-      { icon: Filter, text: "Advanced filters" },
-    ],
-  },
-  {
-    id: "go-premium",
-    name: "Go Premium",
-    tagline: "The ultimate Social Go experience",
-    icon: Crown,
-    iconColor: "text-violet-500",
-    badgeBg: "bg-violet-500/8",
-    popular: true,
-    prices: {
-      weekly: { amount: "$4.99", perMonth: "$19.96/mo" } as PlanPricing,
-      monthly: { amount: "$12.99", perMonth: "$12.99/mo" } as PlanPricing,
-      "6month": { amount: "$39.99", perMonth: "$6.67/mo", save: "Save 49%" } as PlanPricing,
-    },
-    features: [
-      { icon: Heart, text: "Everything in Go+" },
-      { icon: Sparkles, text: "Priority profile — seen first" },
-      { icon: MessageCircle, text: "Message anyone nearby" },
-      { icon: Eye, text: "See who's interested in you" },
-      { icon: Zap, text: "3 free Boosts per month" },
-      { icon: Star, text: "5 Shoutouts per week" },
-    ],
-  },
-];
+interface StripeProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  metadata: Record<string, string>;
+  prices: StripePrice[];
+}
 
-const boostProducts = [
-  {
-    id: "boost-1",
-    name: "1 Boost",
-    subtitle: "30 min of visibility",
-    price: "$2.49",
-    icon: Zap,
-    color: "text-amber-500",
-    bg: "bg-amber-500/8",
-  },
-  {
-    id: "boost-5",
-    name: "5 Boosts",
-    subtitle: "Best for a night out",
-    price: "$7.49",
-    priceEach: "$1.50 each",
-    icon: Flame,
-    color: "text-orange-500",
-    bg: "bg-orange-500/8",
-    popular: true,
-  },
-  {
-    id: "boost-10",
-    name: "10 Boosts",
-    subtitle: "Stay visible all week",
-    price: "$12.49",
-    priceEach: "$1.25 each",
-    icon: Crown,
-    color: "text-violet-500",
-    bg: "bg-violet-500/8",
-  },
-];
+const planFeatures: Record<string, Array<{ icon: any; text: string }>> = {
+  "go-plus": [
+    { icon: Heart, text: "Unlimited interactions" },
+    { icon: Eye, text: "See who viewed your profile" },
+    { icon: Zap, text: "1 free Boost per month" },
+    { icon: Filter, text: "Advanced filters" },
+  ],
+  "go-premium": [
+    { icon: Heart, text: "Everything in Go+" },
+    { icon: Sparkles, text: "Priority profile \u2014 seen first" },
+    { icon: MessageCircle, text: "Message anyone nearby" },
+    { icon: Eye, text: "See who's interested in you" },
+    { icon: Zap, text: "3 free Boosts per month" },
+    { icon: Star, text: "5 Shoutouts per week" },
+  ],
+};
 
-const shoutoutPacks = [
-  { id: "shoutout-1", amount: 1, price: "$1.99" },
-  { id: "shoutout-3", amount: 3, price: "$4.99", priceEach: "$1.66 each" },
-  { id: "shoutout-5", amount: 5, price: "$7.49", priceEach: "$1.50 each", popular: true },
-  { id: "shoutout-15", amount: 15, price: "$17.49", priceEach: "$1.17 each" },
-];
+const planMeta: Record<string, { icon: any; iconColor: string; badgeBg: string; tagline: string; popular?: boolean }> = {
+  "go-plus": { icon: Star, iconColor: "text-amber-500", badgeBg: "bg-amber-500/8", tagline: "See more, connect more" },
+  "go-premium": { icon: Crown, iconColor: "text-violet-500", badgeBg: "bg-violet-500/8", tagline: "The ultimate Social Go experience", popular: true },
+};
 
-const tokenPacks = [
-  { id: "tokens-50", amount: 50, price: "$2.49" },
-  { id: "tokens-150", amount: 150, price: "$5.99", priceEach: "$0.04 each", bonus: "+25 free" },
-  { id: "tokens-500", amount: 500, price: "$14.99", priceEach: "$0.03 each", bonus: "+100 free", popular: true },
-  { id: "tokens-1200", amount: 1200, price: "$29.99", priceEach: "$0.025 each", bonus: "+300 free" },
-];
+const boostMeta: Record<string, { icon: any; color: string; bg: string; subtitle: string; popular?: boolean }> = {
+  "1": { icon: Zap, color: "text-amber-500", bg: "bg-amber-500/8", subtitle: "30 min of visibility" },
+  "5": { icon: Flame, color: "text-orange-500", bg: "bg-orange-500/8", subtitle: "Best for a night out", popular: true },
+  "10": { icon: Crown, color: "text-violet-500", bg: "bg-violet-500/8", subtitle: "Stay visible all week" },
+};
+
+function formatPrice(amount: number) {
+  return `$${(amount / 100).toFixed(2)}`;
+}
+
+function getPricePerMonth(price: StripePrice): string {
+  if (!price.recurring) return "";
+  const amount = price.unitAmount;
+  const interval = price.recurring.interval;
+  const count = price.recurring.interval_count || 1;
+
+  if (interval === "week") return `$${((amount / 100) * 4.33).toFixed(2)}/mo`;
+  if (interval === "month" && count === 1) return `$${(amount / 100).toFixed(2)}/mo`;
+  if (interval === "month" && count === 6) return `$${((amount / 100) / 6).toFixed(2)}/mo`;
+  return "";
+}
+
+function getSavePercent(prices: StripePrice[], currentPrice: StripePrice): string | null {
+  if (!currentPrice.recurring) return null;
+  const monthlyPrice = prices.find(p => p.metadata?.period === "monthly");
+  if (!monthlyPrice || monthlyPrice.id === currentPrice.id) return null;
+  const monthlyPerMonth = monthlyPrice.unitAmount;
+  const interval = currentPrice.recurring.interval;
+  const count = currentPrice.recurring.interval_count || 1;
+  let currentPerMonth: number;
+  if (interval === "week") currentPerMonth = currentPrice.unitAmount * 4.33;
+  else if (interval === "month") currentPerMonth = currentPrice.unitAmount / count;
+  else return null;
+  const savings = Math.round((1 - currentPerMonth / monthlyPerMonth) * 100);
+  return savings > 0 ? `Save ${savings}%` : null;
+}
+
+function getPeriodLabel(price: StripePrice): string {
+  if (!price.recurring) return "";
+  const interval = price.recurring.interval;
+  const count = price.recurring.interval_count || 1;
+  if (interval === "week") return "week";
+  if (interval === "month" && count === 1) return "month";
+  if (interval === "month" && count === 6) return "6 months";
+  return interval;
+}
 
 export default function Shop() {
   const { toast } = useToast();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("6month");
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      toast({ title: "Purchase successful!", description: "Thank you for your purchase." });
+      window.history.replaceState({}, '', '/shop');
+      queryClient.invalidateQueries({ queryKey: [api.users.me.path] });
+    } else if (params.get('cancelled') === 'true') {
+      toast({ title: "Purchase cancelled", description: "No charges were made." });
+      window.history.replaceState({}, '', '/shop');
+    }
+  }, []);
 
   const { data: user, isLoading } = useQuery<any>({
     queryKey: [api.users.me.path],
   });
 
-  const boostMutation = useMutation({
-    mutationFn: async (boostType: string) => {
-      const res = await fetch(api.shop.purchaseBoost.path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ boostType }),
-      });
-      if (!res.ok) throw new Error("Purchase failed");
-      return res.json();
+  const { data: productsData, isLoading: productsLoading } = useQuery<{ products: StripeProduct[] }>({
+    queryKey: ['/api/stripe/products'],
+  });
+
+  const { data: subscriptionData } = useQuery<{ subscription: any }>({
+    queryKey: ['/api/stripe/subscription'],
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: async ({ priceId, mode }: { priceId: string; mode: string }) => {
+      const res = await apiRequest('POST', '/api/stripe/checkout', { priceId, mode });
+      return await res.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [api.users.me.path] });
-      toast({
-        title: "Boost Activated!",
-        description: `Boosted until ${new Date(data.boostExpiresAt).toLocaleTimeString()}`,
-      });
+      if (data.url) {
+        window.location.href = data.url;
+      }
     },
     onError: () => {
-      toast({ title: "Purchase failed", description: "Please try again later." });
+      toast({ title: "Checkout failed", description: "Please try again later." });
     },
   });
 
-  const handlePurchase = (itemName: string) => {
-    toast({
-      title: "Coming Soon",
-      description: `${itemName} will be available once payments are connected.`,
-    });
-  };
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/stripe/portal', {});
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Could not open billing portal." });
+    },
+  });
 
   const toggleSection = (section: string) => {
     setOpenSection(prev => prev === section ? null : section);
@@ -157,10 +168,27 @@ export default function Shop() {
     </div>
   );
 
+  const products = productsData?.products || [];
+  const subscriptionProducts = products.filter(p => p.metadata?.type === "subscription");
+  const boostProducts = products.filter(p => p.metadata?.type === "boost");
+  const shoutoutProducts = products.filter(p => p.metadata?.type === "shoutout");
+  const tokenProducts = products.filter(p => p.metadata?.type === "tokens");
+  const currentSubscription = subscriptionData?.subscription;
+
+  const periodToMetadata: Record<BillingPeriod, string> = {
+    weekly: "weekly",
+    monthly: "monthly",
+    "6month": "6month",
+  };
+
   const billingLabels: Record<BillingPeriod, string> = {
     weekly: "Weekly",
     monthly: "Monthly",
     "6month": "6 Months",
+  };
+
+  const handleCheckout = (priceId: string, isSubscription: boolean) => {
+    checkoutMutation.mutate({ priceId, mode: isSubscription ? "subscription" : "payment" });
   };
 
   return (
@@ -204,6 +232,33 @@ export default function Shop() {
         </Card>
       </div>
 
+      {currentSubscription && (
+        <div className="mx-5 mb-4">
+          <Card className="p-3 flex items-center gap-3 bg-violet-500/5 border-violet-500/15">
+            <div className="h-9 w-9 rounded-md bg-violet-500/10 flex items-center justify-center shrink-0">
+              <Crown className="h-4 w-4 text-violet-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-violet-600 dark:text-violet-400" data-testid="text-subscription-active">
+                {currentSubscription.tier === 'go-premium' ? 'Go Premium' : 'Go+'} Active
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Renews {currentSubscription.currentPeriodEnd ? new Date(currentSubscription.currentPeriodEnd * 1000).toLocaleDateString() : 'soon'}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => portalMutation.mutate()}
+              disabled={portalMutation.isPending}
+              data-testid="button-manage-subscription"
+            >
+              {portalMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <><ExternalLink className="h-3 w-3 mr-1" />Manage</>}
+            </Button>
+          </Card>
+        </div>
+      )}
+
       {user?.isBoosted && user?.boostExpiresAt && (
         <div className="mx-5 mb-4">
           <Card className="p-3 flex items-center gap-3 bg-emerald-500/5 border-emerald-500/15">
@@ -226,37 +281,50 @@ export default function Shop() {
           <TrendingUp className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold font-display">Quick Boosts</h3>
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
-          {boostProducts.map((product) => (
-            <Card
-              key={product.id}
-              className="relative flex flex-col items-center text-center p-4"
-              data-testid={`card-boost-${product.id}`}
-            >
-              {product.popular && (
-                <Badge className="absolute -top-2 text-[9px]">Popular</Badge>
-              )}
-              <div className={cn("h-10 w-10 rounded-md flex items-center justify-center mb-2.5", product.bg)}>
-                <product.icon className={cn("h-5 w-5", product.color)} />
-              </div>
-              <span className="text-xs font-bold" data-testid={`text-boost-name-${product.id}`}>{product.name}</span>
-              <span className="text-[11px] text-muted-foreground mt-0.5">{product.subtitle}</span>
-              <span className="text-sm font-bold mt-2">{product.price}</span>
-              {product.priceEach && (
-                <span className="text-[10px] text-muted-foreground">{product.priceEach}</span>
-              )}
-              <Button
-                size="sm"
-                className="w-full mt-3 font-semibold"
-                onClick={() => boostMutation.mutate(product.id)}
-                disabled={boostMutation.isPending}
-                data-testid={`button-buy-boost-${product.id}`}
-              >
-                {boostMutation.isPending ? "..." : "Buy"}
-              </Button>
-            </Card>
-          ))}
-        </div>
+        {productsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2.5">
+            {boostProducts.sort((a, b) => parseInt(a.metadata?.quantity || "0") - parseInt(b.metadata?.quantity || "0")).map((product) => {
+              const qty = product.metadata?.quantity || "1";
+              const meta = boostMeta[qty] || boostMeta["1"];
+              const price = product.prices[0];
+              const priceEach = parseInt(qty) > 1 && price ? `$${(price.unitAmount / 100 / parseInt(qty)).toFixed(2)} each` : undefined;
+
+              return (
+                <Card
+                  key={product.id}
+                  className="relative flex flex-col items-center text-center p-4"
+                  data-testid={`card-boost-${qty}`}
+                >
+                  {meta.popular && (
+                    <Badge className="absolute -top-2 text-[9px]">Popular</Badge>
+                  )}
+                  <div className={cn("h-10 w-10 rounded-md flex items-center justify-center mb-2.5", meta.bg)}>
+                    <meta.icon className={cn("h-5 w-5", meta.color)} />
+                  </div>
+                  <span className="text-xs font-bold" data-testid={`text-boost-name-${qty}`}>{product.name}</span>
+                  <span className="text-[11px] text-muted-foreground mt-0.5">{meta.subtitle}</span>
+                  <span className="text-sm font-bold mt-2">{price ? formatPrice(price.unitAmount) : "..."}</span>
+                  {priceEach && (
+                    <span className="text-[10px] text-muted-foreground">{priceEach}</span>
+                  )}
+                  <Button
+                    size="sm"
+                    className="w-full mt-3 font-semibold"
+                    onClick={() => price && handleCheckout(price.id, false)}
+                    disabled={checkoutMutation.isPending || !price}
+                    data-testid={`button-buy-boost-${qty}`}
+                  >
+                    {checkoutMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Buy"}
+                  </Button>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="px-5 pt-5 pb-3" id="subscriptions-section">
@@ -286,65 +354,88 @@ export default function Shop() {
           </div>
         </div>
 
-        <div className="space-y-3">
-          {subscriptionPlans.map((plan) => {
-            const pricing = plan.prices[billingPeriod];
-            return (
-              <Card
-                key={plan.id}
-                className={cn("relative overflow-hidden", plan.popular && "ring-1 ring-primary/30")}
-                data-testid={`card-plan-${plan.id}`}
-              >
-                <div className="p-5">
-                  {plan.popular && (
-                    <Badge className="absolute top-3 right-3 text-[10px] gap-1" data-testid={`badge-popular-${plan.id}`}>
-                      <Sparkles className="h-3 w-3" />
-                      Most Popular
-                    </Badge>
-                  )}
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className={cn("h-10 w-10 rounded-md flex items-center justify-center", plan.badgeBg)}>
-                      <plan.icon className={cn("h-5 w-5", plan.iconColor)} />
-                    </div>
-                    <div>
-                      <p className="font-bold font-display" data-testid={`text-plan-name-${plan.id}`}>{plan.name}</p>
-                      <p className="text-xs text-muted-foreground">{plan.tagline}</p>
-                    </div>
-                  </div>
+        {productsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {subscriptionProducts.sort((a, b) => {
+              const order = ["go-plus", "go-premium"];
+              return order.indexOf(a.metadata?.tier || "") - order.indexOf(b.metadata?.tier || "");
+            }).map((plan) => {
+              const tier = plan.metadata?.tier || "";
+              const meta = planMeta[tier];
+              const features = planFeatures[tier] || [];
+              const targetPeriod = periodToMetadata[billingPeriod];
+              const selectedPrice = plan.prices.find(p => p.metadata?.period === targetPeriod);
+              const save = selectedPrice ? getSavePercent(plan.prices, selectedPrice) : null;
+              const isCurrentPlan = currentSubscription?.tier === tier;
 
-                  <div className="flex items-baseline gap-1.5 mb-4">
-                    <span className="text-3xl font-extrabold font-display" data-testid={`text-plan-price-${plan.id}`}>{pricing.amount}</span>
-                    <span className="text-sm text-muted-foreground">/ {billingPeriod === "weekly" ? "week" : billingPeriod === "monthly" ? "month" : "6 months"}</span>
-                    {pricing.save && (
-                      <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/8 text-emerald-600 dark:text-emerald-400" data-testid={`text-plan-save-${plan.id}`}>
-                        {pricing.save}
+              if (!meta) return null;
+
+              return (
+                <Card
+                  key={plan.id}
+                  className={cn("relative overflow-hidden", meta.popular && "ring-1 ring-primary/30")}
+                  data-testid={`card-plan-${tier}`}
+                >
+                  <div className="p-5">
+                    {meta.popular && (
+                      <Badge className="absolute top-3 right-3 text-[10px] gap-1" data-testid={`badge-popular-${tier}`}>
+                        <Sparkles className="h-3 w-3" />
+                        Most Popular
                       </Badge>
                     )}
-                  </div>
-
-                  <div className="space-y-2.5 mb-5">
-                    {plan.features.map((feature, i) => (
-                      <div key={i} className="flex items-center gap-2.5">
-                        <div className="h-5 w-5 rounded-full bg-primary/8 flex items-center justify-center shrink-0">
-                          <Check className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-sm">{feature.text}</span>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className={cn("h-10 w-10 rounded-md flex items-center justify-center", meta.badgeBg)}>
+                        <meta.icon className={cn("h-5 w-5", meta.iconColor)} />
                       </div>
-                    ))}
+                      <div>
+                        <p className="font-bold font-display" data-testid={`text-plan-name-${tier}`}>{plan.name}</p>
+                        <p className="text-xs text-muted-foreground">{meta.tagline}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-1.5 mb-4">
+                      <span className="text-3xl font-extrabold font-display" data-testid={`text-plan-price-${tier}`}>
+                        {selectedPrice ? formatPrice(selectedPrice.unitAmount) : "..."}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        / {selectedPrice ? getPeriodLabel(selectedPrice) : billingPeriod}
+                      </span>
+                      {save && (
+                        <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/8 text-emerald-600 dark:text-emerald-400" data-testid={`text-plan-save-${tier}`}>
+                          {save}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="space-y-2.5 mb-5">
+                      {features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2.5">
+                          <div className="h-5 w-5 rounded-full bg-primary/8 flex items-center justify-center shrink-0">
+                            <Check className="h-3 w-3 text-primary" />
+                          </div>
+                          <span className="text-sm">{feature.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      className="w-full font-semibold"
+                      variant={meta.popular ? "default" : "outline"}
+                      onClick={() => selectedPrice && handleCheckout(selectedPrice.id, true)}
+                      disabled={checkoutMutation.isPending || !selectedPrice || isCurrentPlan}
+                      data-testid={`button-subscribe-${tier}`}
+                    >
+                      {isCurrentPlan ? "Current Plan" : checkoutMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : `Get ${plan.name}`}
+                    </Button>
                   </div>
-                  <Button
-                    className="w-full font-semibold"
-                    variant={plan.popular ? "default" : "outline"}
-                    onClick={() => handlePurchase(plan.name)}
-                    data-testid={`button-subscribe-${plan.id}`}
-                  >
-                    Get {plan.name}
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="px-5 pt-6 pb-2">
@@ -370,35 +461,49 @@ export default function Shop() {
         {openSection === "shoutouts" && (
           <div className="mt-3 space-y-2">
             <p className="text-xs text-muted-foreground mb-3">Send a Shoutout to get noticed. Your profile jumps to the top of their list.</p>
-            {shoutoutPacks.map((pack) => (
-              <Card key={pack.id} className="flex items-center gap-3 p-3">
-                <div className="h-9 w-9 rounded-md bg-orange-500/8 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-4 w-4 text-orange-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold" data-testid={`text-shoutout-${pack.id}`}>
-                      {pack.amount} {pack.amount === 1 ? "Shoutout" : "Shoutouts"}
-                    </span>
-                    {pack.popular && (
-                      <Badge variant="secondary" className="text-[9px]">Best value</Badge>
-                    )}
-                  </div>
-                  {pack.priceEach && (
-                    <p className="text-[11px] text-muted-foreground">{pack.priceEach}</p>
-                  )}
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="font-semibold"
-                  onClick={() => handlePurchase(`${pack.amount} Shoutouts`)}
-                  data-testid={`button-buy-shoutout-${pack.id}`}
-                >
-                  {pack.price}
-                </Button>
-              </Card>
-            ))}
+            {productsLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              shoutoutProducts.sort((a, b) => parseInt(a.metadata?.quantity || "0") - parseInt(b.metadata?.quantity || "0")).map((pack) => {
+                const qty = parseInt(pack.metadata?.quantity || "1");
+                const price = pack.prices[0];
+                const priceEach = qty > 1 && price ? `$${(price.unitAmount / 100 / qty).toFixed(2)} each` : undefined;
+                const popular = pack.metadata?.popular === "true";
+
+                return (
+                  <Card key={pack.id} className="flex items-center gap-3 p-3">
+                    <div className="h-9 w-9 rounded-md bg-orange-500/8 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold" data-testid={`text-shoutout-${qty}`}>
+                          {qty} {qty === 1 ? "Shoutout" : "Shoutouts"}
+                        </span>
+                        {popular && (
+                          <Badge variant="secondary" className="text-[9px]">Best value</Badge>
+                        )}
+                      </div>
+                      {priceEach && (
+                        <p className="text-[11px] text-muted-foreground">{priceEach}</p>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="font-semibold"
+                      onClick={() => price && handleCheckout(price.id, false)}
+                      disabled={checkoutMutation.isPending || !price}
+                      data-testid={`button-buy-shoutout-${qty}`}
+                    >
+                      {price ? formatPrice(price.unitAmount) : "..."}
+                    </Button>
+                  </Card>
+                );
+              })
+            )}
           </div>
         )}
       </div>
@@ -426,38 +531,53 @@ export default function Shop() {
         {openSection === "tokens" && (
           <div className="mt-3 space-y-2">
             <p className="text-xs text-muted-foreground mb-3">Use tokens to extend Go Mode, send gifts, and tip profiles. They never expire.</p>
-            {tokenPacks.map((pack) => (
-              <Card key={pack.id} className="flex items-center gap-3 p-3">
-                <div className="h-9 w-9 rounded-md bg-amber-500/8 flex items-center justify-center shrink-0">
-                  <Coins className="h-4 w-4 text-amber-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold" data-testid={`text-token-amount-${pack.id}`}>{pack.amount} tokens</span>
-                    {pack.popular && (
-                      <Badge variant="secondary" className="text-[9px]">Best value</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {pack.priceEach && (
-                      <span className="text-[11px] text-muted-foreground">{pack.priceEach}</span>
-                    )}
-                    {pack.bonus && (
-                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">{pack.bonus}</span>
-                    )}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="font-semibold"
-                  onClick={() => handlePurchase(`${pack.amount} Tokens`)}
-                  data-testid={`button-buy-token-${pack.id}`}
-                >
-                  {pack.price}
-                </Button>
-              </Card>
-            ))}
+            {productsLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              tokenProducts.sort((a, b) => parseInt(a.metadata?.quantity || "0") - parseInt(b.metadata?.quantity || "0")).map((pack) => {
+                const qty = parseInt(pack.metadata?.quantity || "50");
+                const price = pack.prices[0];
+                const priceEach = price ? `$${(price.unitAmount / 100 / qty).toFixed(3)} each` : undefined;
+                const bonus = pack.metadata?.bonus ? `+${pack.metadata.bonus} free` : undefined;
+                const popular = pack.metadata?.popular === "true";
+
+                return (
+                  <Card key={pack.id} className="flex items-center gap-3 p-3">
+                    <div className="h-9 w-9 rounded-md bg-amber-500/8 flex items-center justify-center shrink-0">
+                      <Coins className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold" data-testid={`text-token-amount-${qty}`}>{qty} tokens</span>
+                        {popular && (
+                          <Badge variant="secondary" className="text-[9px]">Best value</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {priceEach && (
+                          <span className="text-[11px] text-muted-foreground">{priceEach}</span>
+                        )}
+                        {bonus && (
+                          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">{bonus}</span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="font-semibold"
+                      onClick={() => price && handleCheckout(price.id, false)}
+                      disabled={checkoutMutation.isPending || !price}
+                      data-testid={`button-buy-token-${qty}`}
+                    >
+                      {price ? formatPrice(price.unitAmount) : "..."}
+                    </Button>
+                  </Card>
+                );
+              })
+            )}
           </div>
         )}
       </div>
@@ -508,6 +628,21 @@ export default function Shop() {
           </div>
         </Card>
       </div>
+
+      {user?.stripeCustomerId && (
+        <div className="px-5 pb-3">
+          <Button
+            variant="outline"
+            className="w-full font-semibold"
+            onClick={() => portalMutation.mutate()}
+            disabled={portalMutation.isPending}
+            data-testid="button-manage-billing"
+          >
+            {portalMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ExternalLink className="h-4 w-4 mr-2" />}
+            Manage Billing
+          </Button>
+        </div>
+      )}
 
       <p className="text-[10px] text-muted-foreground text-center px-5 pb-6 pt-2">
         Subscriptions auto-renew until cancelled. Cancel anytime in settings. All purchases are non-refundable.

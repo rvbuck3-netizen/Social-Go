@@ -32,10 +32,14 @@ Preferred communication style: Simple, everyday language.
 - **Sessions**: express-session with PostgreSQL session store
 
 ### Database Schema
-Three tables:
+Public schema tables:
 1. **users** - Replit Auth managed table (`id` varchar PK from OIDC `sub` claim, `username`, `email`, `first_name`, `last_name`, `profile_image_url`, `created_at`, `updated_at`)
-2. **profiles** - Social Go profile data (`id` serial PK, `user_id` varchar FK to users, `username`, `bio`, social links, `is_go_mode`, `latitude`, `longitude`, `coins`, etc.)
+2. **profiles** - Social Go profile data (`id` serial PK, `user_id` varchar FK to users, `username`, `bio`, social links, `is_go_mode`, `latitude`, `longitude`, `coins`, `stripe_customer_id`, `stripe_subscription_id`, `subscription_tier`)
 3. **posts** - `id` (serial PK), `content` (text), `latitude` (double), `longitude` (double), `author_name` (text), `created_at` (timestamp)
+
+Stripe schema (managed by `stripe-replit-sync`, DO NOT manually create or modify):
+- `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`, etc.
+- Synced automatically via webhooks and `syncBackfill()` on startup.
 
 Schema migrations are managed via `drizzle-kit push` (push-based, not migration files).
 
@@ -50,6 +54,11 @@ All API routes require authentication (except `/api/auth/*` and `/api/logout`).
 - `POST /api/users/block` - Block a user
 - `POST /api/users/report` - Report a user
 - `GET /api/logout` - Log out and destroy session
+- `GET /api/stripe/publishable-key` - Get Stripe publishable key for frontend
+- `GET /api/stripe/products` - List all active products with prices from Stripe
+- `POST /api/stripe/checkout` - Create Stripe Checkout session (requires priceId, mode)
+- `POST /api/stripe/portal` - Create Stripe Customer Portal session for billing management
+- `GET /api/stripe/subscription` - Get current user's active subscription info
 
 ### Key Design Decisions
 - **Shared route contracts**: The `shared/routes.ts` file defines API paths, methods, input schemas, and response schemas in one place. Both client hooks and server handlers reference these, ensuring consistency.
@@ -74,9 +83,12 @@ client/          - React frontend
     pages/       - Page components (SocialMap, Feed, Profile, Shop, AppSettings, Landing, UserProfile)
     lib/         - Utilities (queryClient, utils)
 server/          - Express backend
-  index.ts       - Server entry point
+  index.ts       - Server entry point (includes Stripe init + webhook route)
   routes.ts      - API route registration
   storage.ts     - Database access layer (IStorage interface + DatabaseStorage)
+  stripeClient.ts - Stripe SDK client with Replit connection credentials
+  webhookHandlers.ts - Stripe webhook processing via stripe-replit-sync
+  seed-stripe-products.ts - Script to seed Stripe products (run manually)
   seed.ts        - Database seeding
   db.ts          - Database connection setup
   vite.ts        - Vite dev middleware setup

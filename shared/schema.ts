@@ -26,6 +26,9 @@ export const profiles = pgTable("profiles", {
   isBoosted: boolean("is_boosted").default(false).notNull(),
   boostExpiresAt: timestamp("boost_expires_at"),
   coins: integer("coins").default(0).notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionTier: text("subscription_tier"),
 });
 
 export const posts = pgTable("posts", {
