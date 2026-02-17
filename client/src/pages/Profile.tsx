@@ -37,7 +37,7 @@ const markerStyles = [
 ];
 
 const avatarStyles = [
-  { id: "avataaars", label: "Avataaars" },
+  { id: "avataaars", label: "Avatars" },
   { id: "bottts", label: "Bots" },
   { id: "pixel-art", label: "Pixel" },
   { id: "lorelei", label: "Lorelei" },
