@@ -1,5 +1,5 @@
 
-import { pgTable, text, serial, timestamp, boolean, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, doublePrecision, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,6 +15,9 @@ export const users = pgTable("users", {
   instagram: text("instagram"),
   twitter: text("twitter"),
   website: text("website"),
+  isBoosted: boolean("is_boosted").default(false).notNull(),
+  boostExpiresAt: timestamp("boost_expires_at"),
+  coins: integer("coins").default(0).notNull(),
 });
 
 export const posts = pgTable("posts", {
@@ -32,7 +35,8 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   id: true, 
   createdAt: true 
 }).extend({
-  hideExactLocation: z.boolean().default(false),
+  hideExactLocation: z.boolean().optional().default(false),
+  isAnonymous: z.boolean().optional().default(false),
 });
 
 export type Post = typeof posts.$inferSelect;

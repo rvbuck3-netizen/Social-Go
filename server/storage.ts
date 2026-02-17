@@ -9,6 +9,7 @@ import {
 import { eq, desc, and, isNotNull, gt, sql } from "drizzle-orm";
 
 export interface IStorage {
+  getUser(id: number): Promise<typeof users.$inferSelect | undefined>;
   getPosts(): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
   updateUserStatus(id: number, status: { 
@@ -21,9 +22,15 @@ export interface IStorage {
     website?: string
   }): Promise<void>;
   getNearbyUsers(): Promise<(typeof users.$inferSelect)[]>;
+  activateBoost(userId: number, durationHours: number): Promise<Date>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<typeof users.$inferSelect | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
   async getPosts(): Promise<Post[]> {
     return await db.select().from(posts).orderBy(desc(posts.createdAt));
   }
@@ -83,6 +90,17 @@ export class DatabaseStorage implements IStorage {
       latitude: r.latitude!,
       longitude: r.longitude!
     }));
+  }
+
+  async activateBoost(userId: number, durationHours: number): Promise<Date> {
+    const expiresAt = new Date(Date.now() + durationHours * 60 * 60 * 1000);
+    await db.update(users)
+      .set({
+        isBoosted: true,
+        boostExpiresAt: expiresAt,
+      })
+      .where(eq(users.id, userId));
+    return expiresAt;
   }
 }
 

@@ -14,22 +14,21 @@ export async function registerRoutes(
   // Seed the database on startup
   await seedDatabase();
 
-  // Mock "me" for MVP
   app.get(api.users.me.path, async (req, res) => {
+    const user = await storage.getUser(1);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json({ 
-      id: 1, 
-      username: "Alice", 
-      isGoMode: false,
-      bio: "Exploring the world, one pin at a time.",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
+      ...user,
+      avatar: user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
     });
   });
 
   app.patch(api.users.updateStatus.path, async (req, res) => {
     try {
-      const { isGoMode, latitude, longitude } = api.users.updateStatus.input.parse(req.body);
-      // Using hardcoded ID 1 for MVP
-      await storage.updateUserStatus(1, { isGoMode, latitude, longitude });
+      const data = api.users.updateStatus.input.parse(req.body);
+      await storage.updateUserStatus(1, data);
       res.json({ success: true });
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -42,6 +41,25 @@ export async function registerRoutes(
   app.get(api.users.nearby.path, async (req, res) => {
     const nearby = await storage.getNearbyUsers();
     res.json(nearby);
+  });
+
+  app.post(api.shop.purchaseBoost.path, async (req, res) => {
+    try {
+      const { boostType } = api.shop.purchaseBoost.input.parse(req.body);
+      const durationMap: Record<string, number> = {
+        "boost-1hr": 1,
+        "boost-6hr": 6,
+        "boost-24hr": 24,
+      };
+      const hours = durationMap[boostType];
+      const expiresAt = await storage.activateBoost(1, hours);
+      res.json({ success: true, boostExpiresAt: expiresAt.toISOString() });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   app.get(api.posts.list.path, async (req, res) => {

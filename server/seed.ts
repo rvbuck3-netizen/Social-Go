@@ -1,7 +1,18 @@
 
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { storage } from "./storage";
 
 export async function seedDatabase() {
+  const [existingUser] = await db.select().from(users).where(eq(users.id, 1));
+  if (!existingUser) {
+    await db.insert(users).values({
+      username: "Alice",
+      bio: "Exploring the world, one pin at a time.",
+    });
+  }
+
   const existingPosts = await storage.getPosts();
   if (existingPosts.length === 0) {
     console.log("Seeding database...");

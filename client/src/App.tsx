@@ -8,7 +8,8 @@ import NotFound from "@/pages/not-found";
 import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
-import { Rss, Map as MapIcon, User } from "lucide-react";
+import Shop from "@/pages/Shop";
+import { Rss, Map as MapIcon, User, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function BottomNav() {
@@ -17,6 +18,7 @@ function BottomNav() {
   const navItems = [
     { href: "/feed", icon: Rss, label: "Feed" },
     { href: "/", icon: MapIcon, label: "Social Go" },
+    { href: "/shop", icon: Sparkles, label: "Shop" },
     { href: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -53,6 +55,7 @@ function Router() {
         <Switch>
           <Route path="/" component={SocialMap} />
           <Route path="/feed" component={Feed} />
+          <Route path="/shop" component={Shop} />
           <Route path="/profile" component={Profile} />
           <Route component={NotFound} />
         </Switch>

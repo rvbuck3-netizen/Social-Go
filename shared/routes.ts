@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import { insertPostSchema, posts } from './schema';
+import { insertPostSchema, posts, users } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -25,6 +25,14 @@ export const api = {
           id: z.number(),
           username: z.string(),
           isGoMode: z.boolean(),
+          bio: z.string().nullable(),
+          avatar: z.string().nullable(),
+          instagram: z.string().nullable(),
+          twitter: z.string().nullable(),
+          website: z.string().nullable(),
+          isBoosted: z.boolean(),
+          boostExpiresAt: z.string().nullable(),
+          coins: z.number(),
         }),
       },
     },
@@ -35,6 +43,10 @@ export const api = {
         isGoMode: z.boolean().optional(),
         latitude: z.number().optional(),
         longitude: z.number().optional(),
+        bio: z.string().optional(),
+        instagram: z.string().optional(),
+        twitter: z.string().optional(),
+        website: z.string().optional(),
       }),
       responses: {
         200: z.object({ success: z.boolean() }),
@@ -50,6 +62,19 @@ export const api = {
           latitude: z.number(),
           longitude: z.number(),
         })),
+      },
+    },
+  },
+  shop: {
+    purchaseBoost: {
+      method: 'POST' as const,
+      path: '/api/shop/boost' as const,
+      input: z.object({
+        boostType: z.enum(["boost-1hr", "boost-6hr", "boost-24hr"]),
+      }),
+      responses: {
+        200: z.object({ success: z.boolean(), boostExpiresAt: z.string() }),
+        400: errorSchemas.validation,
       },
     },
   },
