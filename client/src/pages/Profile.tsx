@@ -334,7 +334,7 @@ export default function Profile() {
               name="bio"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs">Bio</FormLabel>
+                  <FormLabel className="text-sm font-semibold">Bio</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Tell us about yourself" className="resize-none text-sm" {...field} data-testid="input-bio" />
                   </FormControl>
@@ -350,7 +350,12 @@ export default function Profile() {
                 data-testid="button-toggle-more-socials"
               >
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Link Socials</p>
-                {showMoreSocials ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                <div className={cn(
+                  "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+                  showMoreSocials && "rotate-180"
+                )}>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </div>
               </button>
 
               {showMoreSocials && (
