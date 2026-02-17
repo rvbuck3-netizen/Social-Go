@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -10,12 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut, Shield, ShieldCheck, Instagram, Twitter, Globe, Settings, Clock, Ban } from "lucide-react";
+import { User, LogOut, Shield, ShieldCheck, Instagram, Twitter, Globe, Settings, Clock, Ban, ChevronDown, ChevronUp } from "lucide-react";
+import { SiTiktok, SiSnapchat, SiLinkedin } from "react-icons/si";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 export default function Profile() {
   const { toast } = useToast();
+  const [showMoreSocials, setShowMoreSocials] = useState(false);
+
   const { data: user, isLoading } = useQuery<any>({
     queryKey: [api.users.me.path],
   });
@@ -25,6 +28,9 @@ export default function Profile() {
       bio: user?.bio || "",
       instagram: user?.instagram || "",
       twitter: user?.twitter || "",
+      tiktok: user?.tiktok || "",
+      snapchat: user?.snapchat || "",
+      linkedin: user?.linkedin || "",
       website: user?.website || "",
     },
   });
@@ -35,6 +41,9 @@ export default function Profile() {
         bio: user.bio || "",
         instagram: user.instagram || "",
         twitter: user.twitter || "",
+        tiktok: user.tiktok || "",
+        snapchat: user.snapchat || "",
+        linkedin: user.linkedin || "",
         website: user.website || "",
       });
     }
@@ -79,6 +88,8 @@ export default function Profile() {
     </div>
   );
 
+  const hasSocials = user?.instagram || user?.twitter || user?.tiktok || user?.snapchat || user?.linkedin || user?.website;
+
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="profile-container">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3 flex items-center justify-between gap-2">
@@ -114,23 +125,40 @@ export default function Profile() {
           {user?.bio && <p className="text-sm text-muted-foreground mt-0.5" data-testid="text-bio">{user?.bio}</p>}
         </div>
 
-        <div className="flex items-center gap-3 mt-3">
-          {user?.instagram && (
-            <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-instagram">
-              <Instagram className="h-4 w-4" />
-            </a>
-          )}
-          {user?.twitter && (
-            <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-twitter">
-              <Twitter className="h-4 w-4" />
-            </a>
-          )}
-          {user?.website && (
-            <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-website">
-              <Globe className="h-4 w-4" />
-            </a>
-          )}
-        </div>
+        {hasSocials && (
+          <div className="flex items-center gap-3 mt-3 flex-wrap">
+            {user?.instagram && (
+              <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-instagram">
+                <Instagram className="h-4 w-4" />
+              </a>
+            )}
+            {user?.twitter && (
+              <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-twitter">
+                <Twitter className="h-4 w-4" />
+              </a>
+            )}
+            {user?.tiktok && (
+              <a href={`https://tiktok.com/@${user.tiktok}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-tiktok">
+                <SiTiktok className="h-4 w-4" />
+              </a>
+            )}
+            {user?.snapchat && (
+              <a href={`https://snapchat.com/add/${user.snapchat}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-snapchat">
+                <SiSnapchat className="h-4 w-4" />
+              </a>
+            )}
+            {user?.linkedin && (
+              <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-linkedin">
+                <SiLinkedin className="h-4 w-4" />
+              </a>
+            )}
+            {user?.website && (
+              <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-website">
+                <Globe className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="px-4 py-3 border-y space-y-3">
@@ -193,48 +221,112 @@ export default function Profile() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="instagram"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5 text-xs">
-                    <Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="twitter"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5 text-xs">
-                    <Twitter className="h-3.5 w-3.5 text-sky-500" /> Twitter
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5 text-xs">
-                    <Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Socials</p>
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="instagram"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs">
+                        <Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="twitter"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs">
+                        <Twitter className="h-3.5 w-3.5 text-sky-500" /> Twitter / X
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground py-1"
+                  onClick={() => setShowMoreSocials(!showMoreSocials)}
+                  data-testid="button-toggle-more-socials"
+                >
+                  {showMoreSocials ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {showMoreSocials ? "Show less" : "More socials"}
+                </button>
+
+                {showMoreSocials && (
+                  <div className="space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="tiktok"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1.5 text-xs">
+                            <SiTiktok className="h-3.5 w-3.5" /> TikTok
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="username" className="text-sm" {...field} data-testid="input-tiktok" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="snapchat"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1.5 text-xs">
+                            <SiSnapchat className="h-3.5 w-3.5 text-yellow-400" /> Snapchat
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="username" className="text-sm" {...field} data-testid="input-snapchat" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="linkedin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1.5 text-xs">
+                            <SiLinkedin className="h-3.5 w-3.5 text-blue-600" /> LinkedIn
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="website"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1.5 text-xs">
+                            <Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <Button type="submit" className="w-full" disabled={updateProfileMutation.isPending} data-testid="button-save-profile">
               Save Profile
             </Button>

@@ -30,6 +30,9 @@ export interface IStorage {
     bio?: string,
     instagram?: string,
     twitter?: string,
+    tiktok?: string,
+    snapchat?: string,
+    linkedin?: string,
     website?: string
   }): Promise<void>;
   getNearbyUsers(requestingUserId: number): Promise<(typeof users.$inferSelect)[]>;
@@ -83,6 +86,9 @@ export class DatabaseStorage implements IStorage {
     bio?: string,
     instagram?: string,
     twitter?: string,
+    tiktok?: string,
+    snapchat?: string,
+    linkedin?: string,
     website?: string
   }): Promise<void> {
     const updateData: any = { lastSeen: new Date() };
@@ -100,6 +106,9 @@ export class DatabaseStorage implements IStorage {
     if (status.bio !== undefined) updateData.bio = status.bio;
     if (status.instagram !== undefined) updateData.instagram = status.instagram;
     if (status.twitter !== undefined) updateData.twitter = status.twitter;
+    if (status.tiktok !== undefined) updateData.tiktok = status.tiktok;
+    if (status.snapchat !== undefined) updateData.snapchat = status.snapchat;
+    if (status.linkedin !== undefined) updateData.linkedin = status.linkedin;
     if (status.website !== undefined) updateData.website = status.website;
 
     await db.update(users).set(updateData).where(eq(users.id, id));
