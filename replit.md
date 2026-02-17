@@ -2,7 +2,7 @@
 
 ## Overview
 
-Social Go is a location-based social networking web application. Users can see nearby people on an interactive map, toggle a "Go Mode" to broadcast their location, drop geo-tagged posts/messages at specific locations, and view a feed of nearby activity. It's built as a mobile-first web app with a map-centric experience, inspired by social discovery apps. Currently in MVP stage with hardcoded user identity (no real authentication yet).
+Social Go is a location-based social networking web application. Users can see nearby people on an interactive map, toggle a "Go Mode" to broadcast their location, drop geo-tagged posts/messages at specific locations, and view a feed of nearby activity. It's built as a mobile-first web app with a map-centric experience, inspired by social discovery apps. Authentication is via Replit Auth (Google, GitHub, Apple, email). Profiles persist across web and future mobile app through shared API/database.
 
 ## User Preferences
 
@@ -28,28 +28,36 @@ Preferred communication style: Simple, everyday language.
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect
 - **Database**: PostgreSQL (required via `DATABASE_URL` environment variable)
 - **Schema**: Defined in `shared/schema.ts` using Drizzle's `pgTable` definitions. Uses `drizzle-zod` for generating Zod schemas from table definitions.
-- **Sessions**: connect-pg-simple available for session storage (not yet actively used since auth is mocked)
+- **Authentication**: Replit Auth (OIDC) with session management via connect-pg-simple
+- **Sessions**: express-session with PostgreSQL session store
 
 ### Database Schema
-Two tables:
-1. **users** - `id` (serial PK), `username` (unique text), `is_go_mode` (boolean), `latitude` (double), `longitude` (double), `last_seen` (timestamp)
-2. **posts** - `id` (serial PK), `content` (text), `latitude` (double), `longitude` (double), `author_name` (text), `created_at` (timestamp)
+Three tables:
+1. **users** - Replit Auth managed table (`id` varchar PK from OIDC `sub` claim, `username`, `email`, `first_name`, `last_name`, `profile_image_url`, `created_at`, `updated_at`)
+2. **profiles** - Social Go profile data (`id` serial PK, `user_id` varchar FK to users, `username`, `bio`, social links, `is_go_mode`, `latitude`, `longitude`, `coins`, etc.)
+3. **posts** - `id` (serial PK), `content` (text), `latitude` (double), `longitude` (double), `author_name` (text), `created_at` (timestamp)
 
 Schema migrations are managed via `drizzle-kit push` (push-based, not migration files).
 
 ### API Endpoints
-- `GET /api/me` - Returns current user (hardcoded to user ID 1 for MVP)
-- `PATCH /api/users/status` - Update user's Go Mode status and location
+All API routes require authentication (except `/api/auth/*` and `/api/logout`).
+- `GET /api/auth/user` - Returns current authenticated user (from session)
+- `GET /api/me` - Returns current user's Social Go profile (auto-creates on first login)
+- `PATCH /api/users/status` - Update user's Go Mode status, location, and profile fields
 - `GET /api/users/nearby` - Get nearby users who have Go Mode enabled
 - `GET /api/posts` - List all posts ordered by recency
 - `POST /api/posts` - Create a new geo-tagged post
+- `POST /api/users/block` - Block a user
+- `POST /api/users/report` - Report a user
+- `GET /api/logout` - Log out and destroy session
 
 ### Key Design Decisions
 - **Shared route contracts**: The `shared/routes.ts` file defines API paths, methods, input schemas, and response schemas in one place. Both client hooks and server handlers reference these, ensuring consistency.
-- **No authentication yet**: The app uses a hardcoded user (ID 1, "Alice") for the MVP. Auth infrastructure is not implemented.
+- **Authentication**: Replit Auth (OIDC) with Google/GitHub/Apple/email providers. Profiles auto-created on first login using claims data.
 - **Database seeding**: On server startup, `server/seed.ts` checks if posts exist and seeds sample data if empty.
-- **Mobile-first layout**: The app uses a fixed bottom navigation bar with three tabs: Feed, Social Go (map), and Profile. The UI is optimized for mobile viewports.
+- **Mobile-first layout**: The app uses a fixed bottom navigation bar with five tabs: Explore (map), Feed, Profile, Shop, Settings. UI is optimized for mobile viewports.
 - **Leaflet over Google Maps**: Uses open-source Leaflet for mapping to avoid API key requirements.
+- **Safety features**: Location fuzzing (~300m offset), auto-expiring Go Mode (2 hours), blocking/reporting.
 
 ### Build Process
 - **Development**: `npm run dev` runs the Express server with Vite middleware for HMR
@@ -62,8 +70,8 @@ client/          - React frontend
   src/
     components/  - Reusable components (Map, PostFeed, CreatePostDialog)
     components/ui/ - shadcn/ui component library
-    hooks/       - Custom hooks (use-location, use-posts, use-toast)
-    pages/       - Page components (SocialMap, Feed, Profile)
+    hooks/       - Custom hooks (use-location, use-posts, use-toast, use-auth)
+    pages/       - Page components (SocialMap, Feed, Profile, Shop, AppSettings, Landing, UserProfile)
     lib/         - Utilities (queryClient, utils)
 server/          - Express backend
   index.ts       - Server entry point
@@ -73,6 +81,7 @@ server/          - Express backend
   db.ts          - Database connection setup
   vite.ts        - Vite dev middleware setup
   static.ts      - Production static file serving
+  replit_integrations/ - Auth integration (Replit OIDC)
 shared/          - Shared code between client and server
   schema.ts      - Drizzle database schema definitions
   routes.ts      - API route contracts with Zod schemas

@@ -1,10 +1,13 @@
 
-import { pgTable, text, serial, timestamp, boolean, doublePrecision, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, doublePrecision, integer, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
+export * from "./models/auth";
+
+export const profiles = pgTable("profiles", {
   id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique(),
   username: text("username").notNull().unique(),
   isGoMode: boolean("is_go_mode").default(false).notNull(),
   goModeExpiresAt: timestamp("go_mode_expires_at"),
@@ -31,6 +34,7 @@ export const posts = pgTable("posts", {
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
   authorName: text("author_name").notNull(),
+  authorUserId: varchar("author_user_id"),
   createdAt: timestamp("created_at").defaultNow(),
   isAnonymous: boolean("is_anonymous").default(false).notNull(),
   hideExactLocation: boolean("hide_exact_location").default(false).notNull(),
@@ -38,16 +42,16 @@ export const posts = pgTable("posts", {
 
 export const blockedUsers = pgTable("blocked_users", {
   id: serial("id").primaryKey(),
-  blockerId: integer("blocker_id").notNull(),
-  blockedId: integer("blocked_id").notNull(),
+  blockerUserId: varchar("blocker_user_id").notNull(),
+  blockedUserId: varchar("blocked_user_id").notNull(),
   reason: text("reason"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const reports = pgTable("reports", {
   id: serial("id").primaryKey(),
-  reporterId: integer("reporter_id").notNull(),
-  reportedUserId: integer("reported_user_id").notNull(),
+  reporterUserId: varchar("reporter_user_id").notNull(),
+  reportedUserId: varchar("reported_user_id").notNull(),
   reason: text("reason").notNull(),
   details: text("details"),
   status: text("status").default("pending").notNull(),
@@ -56,7 +60,8 @@ export const reports = pgTable("reports", {
 
 export const insertPostSchema = createInsertSchema(posts).omit({ 
   id: true, 
-  createdAt: true 
+  createdAt: true,
+  authorUserId: true,
 }).extend({
   hideExactLocation: z.boolean().optional().default(false),
   isAnonymous: z.boolean().optional().default(false),
@@ -73,7 +78,7 @@ export const insertReportSchema = createInsertSchema(reports).omit({
   status: true,
 });
 
+export type Profile = typeof profiles.$inferSelect;
 export type Post = typeof posts.$inferSelect;
-export type InsertPost = z.infer<typeof insertPostSchema>;
 export type BlockedUser = typeof blockedUsers.$inferSelect;
 export type Report = typeof reports.$inferSelect;

@@ -145,11 +145,11 @@ export default function SocialMap() {
   });
 
   const blockMutation = useMutation({
-    mutationFn: async (blockedId: number) => {
+    mutationFn: async (blockedUserId: string) => {
       const res = await fetch(api.users.block.path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blockedId }),
+        body: JSON.stringify({ blockedUserId }),
       });
       return res.json();
     },
@@ -160,7 +160,7 @@ export default function SocialMap() {
   });
 
   const reportMutation = useMutation({
-    mutationFn: async ({ reportedUserId, reason }: { reportedUserId: number, reason: string }) => {
+    mutationFn: async ({ reportedUserId, reason }: { reportedUserId: string, reason: string }) => {
       const res = await fetch(api.users.report.path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,7 +278,7 @@ export default function SocialMap() {
           </Marker>
         ))}
 
-        {nearbyUsers?.filter(u => u.id !== user?.id).map((u) => (
+        {nearbyUsers?.filter(u => u.userId !== user?.userId).map((u) => (
           <Marker 
             key={u.id} 
             position={[u.latitude, u.longitude]}
@@ -334,18 +334,18 @@ export default function SocialMap() {
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => blockMutation.mutate(u.id)}
+                    onClick={() => blockMutation.mutate(u.userId)}
                     disabled={blockMutation.isPending}
-                    data-testid={`button-block-${u.id}`}
+                    data-testid={`button-block-${u.userId}`}
                   >
                     <Ban className="h-4 w-4 text-muted-foreground" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => reportMutation.mutate({ reportedUserId: u.id, reason: "stalking" })}
+                    onClick={() => reportMutation.mutate({ reportedUserId: u.userId, reason: "stalking" })}
                     disabled={reportMutation.isPending}
-                    data-testid={`button-report-${u.id}`}
+                    data-testid={`button-report-${u.userId}`}
                   >
                     <Flag className="h-4 w-4 text-destructive" />
                   </Button>

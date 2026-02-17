@@ -4,7 +4,9 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/Landing";
 import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
@@ -54,7 +56,7 @@ function BottomNav() {
   );
 }
 
-function Router() {
+function AuthenticatedApp() {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
       <main className="flex-1 overflow-hidden relative">
@@ -73,11 +75,29 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Landing />;
+  }
+
+  return <AuthenticatedApp />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Router />
+        <AppContent />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

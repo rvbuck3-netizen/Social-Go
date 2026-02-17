@@ -385,10 +385,12 @@ export default function AppSettings() {
       </div>
 
       <div className="px-4 pt-4 pb-2">
-        <Button variant="ghost" className="w-full justify-start gap-3 text-destructive" data-testid="button-sign-out">
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
+        <a href="/api/logout">
+          <Button variant="ghost" className="w-full justify-start gap-3 text-destructive" data-testid="button-sign-out">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </a>
       </div>
 
       <div className="px-4 pb-6 pt-2">

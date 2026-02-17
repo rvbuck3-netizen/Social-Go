@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import { insertPostSchema, posts, users } from './schema';
+import { insertPostSchema, posts } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -23,6 +23,7 @@ export const api = {
       responses: {
         200: z.object({
           id: z.number(),
+          userId: z.string(),
           username: z.string(),
           isGoMode: z.boolean(),
           goModeExpiresAt: z.string().nullable(),
@@ -47,6 +48,7 @@ export const api = {
       responses: {
         200: z.object({
           id: z.number(),
+          userId: z.string(),
           username: z.string(),
           bio: z.string().nullable(),
           avatar: z.string().nullable(),
@@ -89,6 +91,7 @@ export const api = {
       responses: {
         200: z.array(z.object({
           id: z.number(),
+          userId: z.string(),
           username: z.string(),
           latitude: z.number(),
           longitude: z.number(),
@@ -99,7 +102,7 @@ export const api = {
       method: 'POST' as const,
       path: '/api/users/block' as const,
       input: z.object({
-        blockedId: z.number(),
+        blockedUserId: z.string(),
         reason: z.string().optional(),
       }),
       responses: {
@@ -110,7 +113,7 @@ export const api = {
       method: 'POST' as const,
       path: '/api/users/unblock' as const,
       input: z.object({
-        blockedId: z.number(),
+        blockedUserId: z.string(),
       }),
       responses: {
         200: z.object({ success: z.boolean() }),
@@ -120,7 +123,7 @@ export const api = {
       method: 'POST' as const,
       path: '/api/users/report' as const,
       input: z.object({
-        reportedUserId: z.number(),
+        reportedUserId: z.string(),
         reason: z.enum(["harassment", "inappropriate", "spam", "stalking", "other"]),
         details: z.string().optional(),
       }),
