@@ -10,6 +10,11 @@ export const users = pgTable("users", {
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   lastSeen: timestamp("last_seen").defaultNow(),
+  bio: text("bio"),
+  avatar: text("avatar"),
+  instagram: text("instagram"),
+  twitter: text("twitter"),
+  website: text("website"),
 });
 
 export const posts = pgTable("posts", {

@@ -11,8 +11,16 @@ import { eq, desc, and, isNotNull, gt, sql } from "drizzle-orm";
 export interface IStorage {
   getPosts(): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
-  updateUserStatus(id: number, status: { isGoMode?: boolean, latitude?: number, longitude?: number }): Promise<void>;
-  getNearbyUsers(): Promise<{ id: number, username: string, latitude: number, longitude: number }[]>;
+  updateUserStatus(id: number, status: { 
+    isGoMode?: boolean, 
+    latitude?: number, 
+    longitude?: number,
+    bio?: string,
+    instagram?: string,
+    twitter?: string,
+    website?: string
+  }): Promise<void>;
+  getNearbyUsers(): Promise<(typeof users.$inferSelect)[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -25,25 +33,32 @@ export class DatabaseStorage implements IStorage {
     return post;
   }
 
-  async updateUserStatus(id: number, status: { isGoMode?: boolean, latitude?: number, longitude?: number }): Promise<void> {
+  async updateUserStatus(id: number, status: { 
+    isGoMode?: boolean, 
+    latitude?: number, 
+    longitude?: number,
+    bio?: string,
+    instagram?: string,
+    twitter?: string,
+    website?: string
+  }): Promise<void> {
     await db.update(users)
       .set({
         ...(status.isGoMode !== undefined && { isGoMode: status.isGoMode }),
         ...(status.latitude !== undefined && { latitude: sql`${status.latitude}::double precision` }),
         ...(status.longitude !== undefined && { longitude: sql`${status.longitude}::double precision` }),
+        ...(status.bio !== undefined && { bio: status.bio }),
+        ...(status.instagram !== undefined && { instagram: status.instagram }),
+        ...(status.twitter !== undefined && { twitter: status.twitter }),
+        ...(status.website !== undefined && { website: status.website }),
         lastSeen: new Date(),
       })
       .where(eq(users.id, id));
   }
 
-  async getNearbyUsers(): Promise<{ id: number, username: string, latitude: number, longitude: number }[] > {
+  async getNearbyUsers(): Promise<(typeof users.$inferSelect)[]> {
     // In a real app, we'd use a distance calculation. For MVP, just return active "Go Mode" users.
-    const results = await db.select({
-      id: users.id,
-      username: users.username,
-      latitude: users.latitude,
-      longitude: users.longitude,
-    })
+    const results = await db.select()
     .from(users)
     .where(and(
       eq(users.isGoMode, true),
@@ -51,7 +66,11 @@ export class DatabaseStorage implements IStorage {
       isNotNull(users.longitude)
     ));
     
-    return results as { id: number, username: string, latitude: number, longitude: number }[];
+    return results.map(r => ({
+      ...r,
+      latitude: r.latitude!,
+      longitude: r.longitude!
+    }));
   }
 }
 

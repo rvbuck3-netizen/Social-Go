@@ -6,7 +6,7 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Navigation } from "lucide-react";
+import { Plus, Navigation, Instagram, Twitter, Globe } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -183,14 +183,53 @@ export default function SocialMap() {
             position={[u.latitude, u.longitude]}
             icon={new L.DivIcon({
               html: `<div class="w-8 h-8 rounded-full border-2 border-primary bg-background shadow-md overflow-hidden p-0.5">
-                       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}" class="w-full h-full rounded-full" />
+                       <img src="${u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`}" class="w-full h-full rounded-full" />
                      </div>`,
               className: "",
               iconSize: [32, 32],
               iconAnchor: [16, 16]
             })}
           >
-            <Popup className="modern-popup">{u.username} is nearby</Popup>
+            <Popup className="modern-popup">
+              <div className="p-3 min-w-[180px] bg-background rounded-xl shadow-none">
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar className="h-10 w-10 border-2 border-primary/10">
+                    <AvatarImage src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`} />
+                    <AvatarFallback>{u.username[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-bold text-sm leading-tight">{u.username}</p>
+                    <p className="text-xs text-muted-foreground">Nearby now</p>
+                  </div>
+                </div>
+                
+                {(u.instagram || u.twitter || u.website) && (
+                  <div className="flex items-center gap-2 pt-2 border-t border-border">
+                    {u.instagram && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                        <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer">
+                          <Instagram className="h-4 w-4 text-pink-500" />
+                        </a>
+                      </Button>
+                    )}
+                    {u.twitter && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                        <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer">
+                          <Twitter className="h-4 w-4 text-sky-500" />
+                        </a>
+                      </Button>
+                    )}
+                    {u.website && (
+                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                        <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Popup>
           </Marker>
         ))}
       </MapContainer>
