@@ -1,5 +1,6 @@
 
-import React, { useQuery, useMutation } from "@tanstack/react-query";
+import React from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
