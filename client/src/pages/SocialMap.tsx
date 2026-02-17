@@ -392,7 +392,7 @@ export default function SocialMap() {
 
       <div className="absolute top-4 left-4 z-[1000]">
         <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-green-500 animate-pulse" : "bg-muted-foreground/40")} />
+          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-green-500 animate-pulse" : "bg-red-500")} />
           <span className="text-xs font-bold uppercase tracking-widest">Social Go</span>
         </div>
       </div>
