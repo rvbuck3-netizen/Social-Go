@@ -67,6 +67,7 @@ const moodOptions = [
 export default function Profile() {
   const { toast } = useToast();
   const [showMoreSocials, setShowMoreSocials] = useState(false);
+  const [showCustomize, setShowCustomize] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("purple");
   const [selectedMarker, setSelectedMarker] = useState("default");
   const [selectedAvatar, setSelectedAvatar] = useState("avataaars");
@@ -229,12 +230,25 @@ export default function Profile() {
       </div>
 
       <div className="px-4 py-4 border-t">
-        <div className="flex items-center gap-2 mb-3">
-          <Palette className="h-4 w-4 text-primary shrink-0" />
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customize</p>
-        </div>
+        <button
+          type="button"
+          className="flex items-center justify-between w-full py-1"
+          onClick={() => setShowCustomize(!showCustomize)}
+          data-testid="button-toggle-customize"
+        >
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-primary shrink-0" />
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customize Profile</p>
+          </div>
+          <div className={cn(
+            "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+            showCustomize && "rotate-180"
+          )}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </button>
 
-        <div className="space-y-4">
+        {showCustomize && <div className="space-y-4 mt-3">
           <div>
             <p className="text-xs font-medium mb-2">Profile color</p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -322,7 +336,7 @@ export default function Profile() {
               ))}
             </div>
           </div>
-        </div>
+        </div>}
       </div>
 
       <div className="px-4 pt-4 pb-4 border-t">
