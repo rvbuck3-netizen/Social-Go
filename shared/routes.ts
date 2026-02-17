@@ -16,6 +16,43 @@ export const errorSchemas = {
 };
 
 export const api = {
+  users: {
+    me: {
+      method: 'GET' as const,
+      path: '/api/me' as const,
+      responses: {
+        200: z.object({
+          id: z.number(),
+          username: z.string(),
+          isGoMode: z.boolean(),
+        }),
+      },
+    },
+    updateStatus: {
+      method: 'PATCH' as const,
+      path: '/api/users/status' as const,
+      input: z.object({
+        isGoMode: z.boolean().optional(),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
+      }),
+      responses: {
+        200: z.object({ success: z.boolean() }),
+      },
+    },
+    nearby: {
+      method: 'GET' as const,
+      path: '/api/users/nearby' as const,
+      responses: {
+        200: z.array(z.object({
+          id: z.number(),
+          username: z.string(),
+          latitude: z.number(),
+          longitude: z.number(),
+        })),
+      },
+    },
+  },
   posts: {
     list: {
       method: 'GET' as const,
