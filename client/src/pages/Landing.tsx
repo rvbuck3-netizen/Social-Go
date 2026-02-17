@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Shield, Users, Zap, Compass, ArrowRight, Globe, Star, MessageCircle, Eye, Sparkles, Lock, Clock } from "lucide-react";
+import { MapPin, Shield, Users, Zap, Compass, ArrowRight, Globe, Star, MessageCircle, Eye, Sparkles, Lock, Clock, CheckCircle2 } from "lucide-react";
 
 const testimonials = [
   {
@@ -98,20 +98,31 @@ export default function Landing() {
               <Shield className="h-3 w-3 mr-1.5" />
               Safety-first social discovery
             </Badge>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-5 font-display" data-testid="text-hero-title">
-              Meet people nearby,<br />without the pressure
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-6 font-display" data-testid="text-hero-title">
+              Connect with people nearby — in real time
             </h1>
-            <p className="text-muted-foreground text-base leading-relaxed mb-10 max-w-md mx-auto">
-              Connect confidently with people around you. Activate Go Mode to broadcast your availability, drop geo-tagged posts, and discover who's nearby — all with your privacy protected.
-            </p>
+            <div className="max-w-sm mx-auto space-y-2.5 mb-10 text-left">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">Go live on the map and see who's around you right now</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">Your exact location is never shared — privacy by default</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">Drop posts, discover nearby activity, and build real connections</p>
+              </div>
+            </div>
             <div className="flex flex-col items-center gap-3">
               <a href="/api/login" data-testid="button-login-hero" className="w-full max-w-xs">
                 <Button size="lg" className="w-full text-[15px] gap-2">
-                  Get Started Free
+                  Join Social Go — It's Free
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </a>
-              <p className="text-xs text-muted-foreground">No credit card required. Sign in with Google, GitHub, or email.</p>
+              <p className="text-xs text-muted-foreground">No credit card required. Must be 18+ to join.</p>
             </div>
           </div>
         </section>
@@ -230,7 +241,7 @@ export default function Landing() {
                 </div>
                 <span className="text-sm font-semibold font-display">Social Go</span>
               </div>
-              <p className="text-xs text-muted-foreground max-w-xs">Location-based social discovery. Meet people nearby with privacy and confidence.</p>
+              <p className="text-xs text-muted-foreground max-w-xs">The real-time social layer for in-person connection. Meet people nearby with privacy and confidence.</p>
             </div>
             <div className="flex flex-col gap-2 text-xs text-muted-foreground">
               <a href="mailto:support@socialgoapp.com" className="hover-elevate rounded-md px-1 -mx-1" data-testid="link-contact">support@socialgoapp.com</a>

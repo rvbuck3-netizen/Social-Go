@@ -12,7 +12,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   User, Instagram, Twitter, Globe, ChevronDown,
-  Palette, Sparkles, Camera, Circle, Heart, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane
+  Palette, Sparkles, Camera, Circle, Heart, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane, Star
 } from "lucide-react";
 import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 import { useForm } from "react-hook-form";
@@ -169,6 +169,12 @@ export default function Profile() {
           <div className="flex-1 pt-1">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <p className="text-lg font-bold font-display" data-testid="text-username">{user?.username}</p>
+              {user?.isFoundingMember && (
+                <Badge variant="secondary" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400" data-testid="badge-founding-member">
+                  <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                  Founder
+                </Badge>
+              )}
               {user?.isGoMode && (
                 <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" data-testid="badge-go-mode">
                   <Circle className="h-1.5 w-1.5 fill-emerald-500 text-emerald-500" />

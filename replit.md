@@ -37,6 +37,8 @@ Public schema tables:
 2. **profiles** - Social Go profile data (`id` serial PK, `user_id` varchar FK to users, `username`, `bio`, social links, `is_go_mode`, `latitude`, `longitude`, `coins`, `stripe_customer_id`, `stripe_subscription_id`, `subscription_tier`)
 3. **posts** - `id` (serial PK), `content` (text), `latitude` (double), `longitude` (double), `author_name` (text), `created_at` (timestamp)
 
+Profile fields include: `is_founding_member` (boolean, marks pre-launch users), `age_verified` (boolean, 18+ confirmation gate), `is_boosted` (boolean, paid visibility boost), `boost_expires_at` (timestamp), `coins` (integer), `stripe_customer_id`, `stripe_subscription_id`, `subscription_tier`.
+
 Stripe schema (managed by `stripe-replit-sync`, DO NOT manually create or modify):
 - `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`, etc.
 - Synced automatically via webhooks and `syncBackfill()` on startup.
@@ -59,6 +61,7 @@ All API routes require authentication (except `/api/auth/*` and `/api/logout`).
 - `POST /api/stripe/checkout` - Create Stripe Checkout session (requires priceId, mode)
 - `POST /api/stripe/portal` - Create Stripe Customer Portal session for billing management
 - `GET /api/stripe/subscription` - Get current user's active subscription info
+- `POST /api/verify-age` - Confirm age verification (18+) for new users
 
 ### Key Design Decisions
 - **Shared route contracts**: The `shared/routes.ts` file defines API paths, methods, input schemas, and response schemas in one place. Both client hooks and server handlers reference these, ensuring consistency.

@@ -29,6 +29,8 @@ export const profiles = pgTable("profiles", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionTier: text("subscription_tier"),
+  isFoundingMember: boolean("is_founding_member").default(false).notNull(),
+  ageVerified: boolean("age_verified").default(false).notNull(),
 });
 
 export const posts = pgTable("posts", {

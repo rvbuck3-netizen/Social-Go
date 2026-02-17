@@ -7,14 +7,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
 import UserProfile from "@/pages/UserProfile";
 import AppSettings from "@/pages/AppSettings";
+import AgeVerification from "@/components/AgeVerification";
 import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@shared/routes";
 
 function BottomNav() {
   const [location] = useLocation();
@@ -74,6 +79,26 @@ function AuthenticatedApp() {
   );
 }
 
+function AgeGatedApp() {
+  const { data: profile, isLoading: profileLoading } = useQuery<any>({
+    queryKey: [api.users.me.path],
+  });
+
+  if (profileLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (profile && !profile.ageVerified) {
+    return <AgeVerification />;
+  }
+
+  return <AuthenticatedApp />;
+}
+
 function AppContent() {
   const { isLoading, isAuthenticated } = useAuth();
 
@@ -86,10 +111,16 @@ function AppContent() {
   }
 
   if (!isAuthenticated) {
-    return <Landing />;
+    return (
+      <Switch>
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route component={Landing} />
+      </Switch>
+    );
   }
 
-  return <AuthenticatedApp />;
+  return <AgeGatedApp />;
 }
 
 function App() {

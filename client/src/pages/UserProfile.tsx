@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User, Instagram, Twitter, Globe, ArrowLeft, Zap, Shield } from "lucide-react";
+import { User, Instagram, Twitter, Globe, ArrowLeft, Zap, Shield, Star } from "lucide-react";
 import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 
 export default function UserProfile() {
@@ -71,6 +71,12 @@ export default function UserProfile() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <span className="text-base font-semibold font-display">{user.username}</span>
+        {user.isFoundingMember && (
+          <Badge variant="secondary" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400" data-testid="badge-founding-member">
+            <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+            Founder
+          </Badge>
+        )}
         {user.isBoosted && (
           <Badge variant="secondary" className="text-[10px] gap-1">
             <Zap className="h-3 w-3" /> Boosted

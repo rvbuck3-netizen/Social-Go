@@ -26,11 +26,31 @@ export async function registerRoutes(
       const claims = req.user.claims;
       const username = claims.first_name || claims.email?.split('@')[0] || `user_${userId.slice(0, 8)}`;
       profile = await storage.createProfile(userId, username, claims.profile_image_url);
+      await db.update(profiles)
+        .set({ isFoundingMember: true })
+        .where(eq(profiles.userId, userId));
+      profile = await storage.getProfile(userId);
     }
     res.json({
       ...profile,
-      avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`
+      avatar: profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.username}`
     });
+  });
+
+  app.post('/api/verify-age', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { confirmed } = req.body;
+      if (!confirmed) {
+        return res.status(400).json({ error: 'Age verification required' });
+      }
+      await db.update(profiles)
+        .set({ ageVerified: true })
+        .where(eq(profiles.userId, userId));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to verify age' });
+    }
   });
 
   app.patch(api.users.updateStatus.path, isAuthenticated, async (req: any, res) => {
