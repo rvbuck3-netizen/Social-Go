@@ -122,16 +122,16 @@ function SectionDropdown({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-t pt-4">
+    <div className="border-t pt-5">
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 text-left"
+        className="w-full flex items-center gap-3 text-left py-1"
         data-testid={`button-toggle-${title.toLowerCase().replace(/\s/g, '-')}`}
       >
         <Icon className={cn("h-5 w-5 shrink-0", iconColor)} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         </div>
         <div className={cn(
           "h-8 w-8 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
@@ -141,7 +141,7 @@ function SectionDropdown({
         </div>
       </button>
       {isOpen && (
-        <div className="mt-3">
+        <div className="mt-4">
           {children}
         </div>
       )}
@@ -209,7 +209,7 @@ export default function Shop() {
         <h1 className="text-base font-semibold" data-testid="text-shop-title">Shop</h1>
       </div>
 
-      <div className="px-4 pt-4 space-y-2">
+      <div className="px-4 pt-5 space-y-5">
 
         {user?.isBoosted && user?.boostExpiresAt && (
           <div className="flex items-center gap-3 py-2">
@@ -231,10 +231,10 @@ export default function Shop() {
           isOpen={openSection === "boosts"}
           onToggle={() => toggleSection("boosts")}
         >
-          <p className="text-xs text-muted-foreground mb-3">Temporarily increase your visibility on the map. Your profile appears larger and highlighted so nearby people notice you first.</p>
-          <div className="space-y-1">
+          <p className="text-xs text-muted-foreground mb-4">Temporarily increase your visibility on the map. Your profile appears larger and highlighted so nearby people notice you first.</p>
+          <div className="space-y-2">
             {boostProducts.map((product) => (
-              <div key={product.id} className="flex items-center gap-3 py-3">
+              <div key={product.id} className="flex items-center gap-3 py-3.5">
                 <product.icon className={cn("h-5 w-5 shrink-0", product.color)} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -272,10 +272,10 @@ export default function Shop() {
           isOpen={openSection === "tokens"}
           onToggle={() => toggleSection("tokens")}
         >
-          <p className="text-xs text-muted-foreground mb-3">Use tokens to unlock premium actions like extending Go Mode, sending gifts, and tipping profiles you like. Tokens never expire.</p>
-          <div className="space-y-1">
+          <p className="text-xs text-muted-foreground mb-4">Use tokens to unlock premium actions like extending Go Mode, sending gifts, and tipping profiles you like. Tokens never expire.</p>
+          <div className="space-y-2">
             {tokenPacks.map((pack) => (
-              <div key={pack.id} className="flex items-center gap-3 py-3">
+              <div key={pack.id} className="flex items-center gap-3 py-3.5">
                 <Coins className="h-5 w-5 text-yellow-500 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -314,10 +314,10 @@ export default function Shop() {
           isOpen={openSection === "roses"}
           onToggle={() => toggleSection("roses")}
         >
-          <p className="text-xs text-muted-foreground mb-3">Send a Rose to someone special. Roses go to the top of their inbox so they see you before anyone else.</p>
-          <div className="space-y-1">
+          <p className="text-xs text-muted-foreground mb-4">Send a Rose to someone special. Roses go to the top of their inbox so they see you before anyone else.</p>
+          <div className="space-y-2">
             {rosePacks.map((pack) => (
-              <div key={pack.id} className="flex items-center gap-3 py-3">
+              <div key={pack.id} className="flex items-center gap-3 py-3.5">
                 <Sparkles className="h-5 w-5 text-rose-500 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -353,7 +353,7 @@ export default function Shop() {
           isOpen={openSection === "subscriptions"}
           onToggle={() => toggleSection("subscriptions")}
         >
-          <p className="text-xs text-muted-foreground mb-3">Get unlimited likes, see who's interested, and stand out with priority placement.</p>
+          <p className="text-xs text-muted-foreground mb-4">Get unlimited likes, see who's interested, and stand out with priority placement.</p>
 
           <div className="flex items-center gap-1 p-0.5 bg-muted rounded-md mb-4 w-fit">
             {(Object.keys(billingLabels) as BillingPeriod[]).map((period) => (
@@ -373,14 +373,14 @@ export default function Shop() {
             ))}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {subscriptionPlans.map((plan) => {
               const pricing = plan.prices[billingPeriod];
               return (
                 <Card
                   key={plan.id}
                   className={cn(
-                    "relative p-4",
+                    "relative p-5",
                     plan.popular && "border-primary"
                   )}
                   data-testid={`card-plan-${plan.id}`}
