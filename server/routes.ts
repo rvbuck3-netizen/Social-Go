@@ -16,7 +16,13 @@ export async function registerRoutes(
 
   // Mock "me" for MVP
   app.get(api.users.me.path, async (req, res) => {
-    res.json({ id: 1, username: "Alice", isGoMode: false });
+    res.json({ 
+      id: 1, 
+      username: "Alice", 
+      isGoMode: false,
+      bio: "Exploring the world, one pin at a time.",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
+    });
   });
 
   app.patch(api.users.updateStatus.path, async (req, res) => {
