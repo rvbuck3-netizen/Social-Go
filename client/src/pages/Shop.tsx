@@ -12,6 +12,12 @@ import { cn } from "@/lib/utils";
 
 type BillingPeriod = "weekly" | "monthly" | "6month";
 
+interface PlanPricing {
+  amount: string;
+  perMonth: string;
+  save?: string;
+}
+
 const subscriptionPlans = [
   {
     id: "go-plus",
@@ -20,9 +26,9 @@ const subscriptionPlans = [
     icon: Star,
     color: "text-yellow-500",
     prices: {
-      weekly: { amount: "$6.99", perMonth: "$27.96/mo" },
-      monthly: { amount: "$19.99", perMonth: "$19.99/mo" },
-      "6month": { amount: "$59.99", perMonth: "$10.00/mo", save: "Save 50%" },
+      weekly: { amount: "$6.99", perMonth: "$27.96/mo" } as PlanPricing,
+      monthly: { amount: "$19.99", perMonth: "$19.99/mo" } as PlanPricing,
+      "6month": { amount: "$59.99", perMonth: "$10.00/mo", save: "Save 50%" } as PlanPricing,
     },
     features: [
       { icon: Heart, text: "Unlimited likes" },
@@ -39,9 +45,9 @@ const subscriptionPlans = [
     color: "text-purple-500",
     popular: true,
     prices: {
-      weekly: { amount: "$12.99", perMonth: "$51.96/mo" },
-      monthly: { amount: "$34.99", perMonth: "$34.99/mo" },
-      "6month": { amount: "$119.99", perMonth: "$20.00/mo", save: "Save 43%" },
+      weekly: { amount: "$12.99", perMonth: "$51.96/mo" } as PlanPricing,
+      monthly: { amount: "$34.99", perMonth: "$34.99/mo" } as PlanPricing,
+      "6month": { amount: "$119.99", perMonth: "$20.00/mo", save: "Save 43%" } as PlanPricing,
     },
     features: [
       { icon: Heart, text: "Everything in Go+" },
@@ -49,7 +55,7 @@ const subscriptionPlans = [
       { icon: MessageCircle, text: "Message before matching" },
       { icon: Eye, text: "See who likes you" },
       { icon: Zap, text: "3 free Boosts per month" },
-      { icon: Star, text: "5 Super Likes per week" },
+      { icon: Star, text: "5 Roses per week" },
     ],
   },
 ];
@@ -84,11 +90,18 @@ const boostProducts = [
   },
 ];
 
-const superLikePacks = [
+const rosePacks = [
   { id: "rose-1", amount: 1, price: "$3.99" },
   { id: "rose-3", amount: 3, price: "$9.99", priceEach: "$3.33 each" },
   { id: "rose-5", amount: 5, price: "$14.99", priceEach: "$3.00 each", popular: true },
   { id: "rose-15", amount: 15, price: "$34.99", priceEach: "$2.33 each" },
+];
+
+const tokenPacks = [
+  { id: "tokens-50", amount: 50, price: "$4.99" },
+  { id: "tokens-150", amount: 150, price: "$11.99", priceEach: "$0.08 each", bonus: "+25 free" },
+  { id: "tokens-500", amount: 500, price: "$29.99", priceEach: "$0.06 each", bonus: "+100 free", popular: true },
+  { id: "tokens-1200", amount: 1200, price: "$59.99", priceEach: "$0.05 each", bonus: "+300 free" },
 ];
 
 export default function Shop() {
@@ -161,8 +174,112 @@ export default function Shop() {
         )}
 
         <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Boosts</p>
+          <p className="text-xs text-muted-foreground mb-3">Temporarily increase your visibility on the map. Your profile appears larger and highlighted so nearby people notice you first. Great for busy areas or events.</p>
+          <div className="space-y-1">
+            {boostProducts.map((product) => (
+              <div key={product.id} className="flex items-center gap-3 py-3">
+                <product.icon className={cn("h-5 w-5 shrink-0", product.color)} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium" data-testid={`text-boost-name-${product.id}`}>{product.name}</span>
+                    {product.popular && (
+                      <Badge variant="secondary" className="text-[10px]">Best value</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{product.description}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => boostMutation.mutate(product.id)}
+                    disabled={boostMutation.isPending}
+                    data-testid={`button-buy-boost-${product.id}`}
+                  >
+                    {product.price}
+                  </Button>
+                  {product.priceEach && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{product.priceEach}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t pt-5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Social Go Tokens</p>
+          <p className="text-xs text-muted-foreground mb-3">Your in-app currency. Use tokens to unlock premium actions like extending Go Mode, sending gifts, and tipping profiles you like. Tokens stay in your account until you spend them.</p>
+          <div className="space-y-1">
+            {tokenPacks.map((pack) => (
+              <div key={pack.id} className="flex items-center gap-3 py-3">
+                <Coins className="h-5 w-5 text-yellow-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium" data-testid={`text-token-amount-${pack.id}`}>{pack.amount} tokens</span>
+                    {pack.popular && (
+                      <Badge variant="secondary" className="text-[10px]">Best value</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {pack.priceEach && (
+                      <span className="text-xs text-muted-foreground">{pack.priceEach}</span>
+                    )}
+                    {pack.bonus && (
+                      <span className="text-xs text-green-600 dark:text-green-400">{pack.bonus}</span>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePurchase(`${pack.amount} Tokens`)}
+                  data-testid={`button-buy-token-${pack.id}`}
+                >
+                  {pack.price}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t pt-5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Roses</p>
+          <p className="text-xs text-muted-foreground mb-3">Send a Rose to someone special. Roses go to the top of their inbox so they see you before anyone else — a standout way to show real interest.</p>
+          <div className="space-y-1">
+            {rosePacks.map((pack) => (
+              <div key={pack.id} className="flex items-center gap-3 py-3">
+                <Sparkles className="h-5 w-5 text-rose-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium" data-testid={`text-rose-${pack.id}`}>
+                      {pack.amount} {pack.amount === 1 ? "Rose" : "Roses"}
+                    </span>
+                    {pack.popular && (
+                      <Badge variant="secondary" className="text-[10px]">Best value</Badge>
+                    )}
+                  </div>
+                  {pack.priceEach && (
+                    <p className="text-xs text-muted-foreground">{pack.priceEach}</p>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePurchase(`${pack.amount} Roses`)}
+                  data-testid={`button-buy-rose-${pack.id}`}
+                >
+                  {pack.price}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t pt-5">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Subscriptions</p>
-          <p className="text-xs text-muted-foreground mb-3">Unlock premium features to meet more people faster.</p>
+          <p className="text-xs text-muted-foreground mb-3">Unlock everything. Get unlimited likes, see who's interested, and stand out with priority placement.</p>
 
           <div className="flex items-center gap-1 p-0.5 bg-muted rounded-md mb-4 w-fit">
             {(Object.keys(billingLabels) as BillingPeriod[]).map((period) => (
@@ -237,79 +354,27 @@ export default function Shop() {
           </div>
         </div>
 
-        <div className="border-t pt-5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Boosts</p>
-          <p className="text-xs text-muted-foreground mb-3">Stand out on the map. Boosted profiles appear larger and highlighted so nearby people notice you first.</p>
-          <div className="space-y-1">
-            {boostProducts.map((product) => (
-              <div key={product.id} className="flex items-center gap-3 py-3">
-                <product.icon className={cn("h-5 w-5 shrink-0", product.color)} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium" data-testid={`text-boost-name-${product.id}`}>{product.name}</span>
-                    {product.popular && (
-                      <Badge variant="secondary" className="text-[10px]">Best value</Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{product.description}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => boostMutation.mutate(product.id)}
-                    disabled={boostMutation.isPending}
-                    data-testid={`button-buy-boost-${product.id}`}
-                  >
-                    {product.price}
-                  </Button>
-                  {product.priceEach && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{product.priceEach}</p>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div className="border-t pt-5 pb-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">How it works</p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <Zap className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Boosts</span> make your profile stand out on the map for a limited time. Think of it as a spotlight — temporary but powerful.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Coins className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Tokens</span> are your wallet. Spend them on premium actions like extending Go Mode, sending gifts, or tipping. They never expire.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Sparkles className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Roses</span> show serious interest. When you send one, your profile jumps to the top of someone's list. Use them wisely.</p>
+            </div>
           </div>
         </div>
 
-        <div className="border-t pt-5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Super Likes</p>
-          <p className="text-xs text-muted-foreground mb-3">Send a Super Like to let someone know you're interested. They'll see yours before anyone else's.</p>
-          <div className="space-y-1">
-            {superLikePacks.map((pack) => (
-              <div key={pack.id} className="flex items-center gap-3 py-3">
-                <Sparkles className="h-5 w-5 text-blue-500 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium" data-testid={`text-superlike-${pack.id}`}>
-                      {pack.amount} Super {pack.amount === 1 ? "Like" : "Likes"}
-                    </span>
-                    {pack.popular && (
-                      <Badge variant="secondary" className="text-[10px]">Best value</Badge>
-                    )}
-                  </div>
-                  {pack.priceEach && (
-                    <p className="text-xs text-muted-foreground">{pack.priceEach}</p>
-                  )}
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handlePurchase(`${pack.amount} Super Likes`)}
-                  data-testid={`button-buy-superlike-${pack.id}`}
-                >
-                  {pack.price}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t pt-4 pb-4">
-          <p className="text-[10px] text-muted-foreground text-center">
-            Subscriptions auto-renew until cancelled. Cancel anytime in your account settings. All purchases are non-refundable.
-          </p>
-        </div>
+        <p className="text-[10px] text-muted-foreground text-center pb-4">
+          Subscriptions auto-renew until cancelled. Cancel anytime in your account settings. All purchases are non-refundable.
+        </p>
       </div>
     </div>
   );
