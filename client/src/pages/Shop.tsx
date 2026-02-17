@@ -103,7 +103,8 @@ export default function Shop() {
         )}
 
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Boosts</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Boosts</p>
+          <p className="text-xs text-muted-foreground mb-3">Stand out on the map. Boosted profiles appear larger and highlighted so nearby people notice you first.</p>
           <div className="space-y-1">
             {boostProducts.map((product) => (
               <div key={product.id} className="flex items-center gap-3 py-3">
