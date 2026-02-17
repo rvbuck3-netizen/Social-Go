@@ -19,8 +19,8 @@ function BottomNav() {
   const navItems = [
     { href: "/", icon: MapIcon, label: "Explore" },
     { href: "/feed", icon: MessageCircle, label: "Feed" },
-    { href: "/shop", icon: ShoppingBag, label: "Shop" },
     { href: "/profile", icon: User, label: "Profile" },
+    { href: "/shop", icon: ShoppingBag, label: "Shop" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
