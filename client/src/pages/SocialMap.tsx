@@ -41,16 +41,8 @@ function ZoomLabelScaler() {
       const zoom = map.getZoom();
       const labelsEl = map.getContainer().querySelector('.labels-layer') as HTMLElement | null;
       if (!labelsEl) return;
-      if (zoom <= 8) {
-        labelsEl.style.filter = 'saturate(0) brightness(0.3) contrast(1.6)';
-        labelsEl.style.opacity = '0.95';
-      } else if (zoom <= 11) {
-        labelsEl.style.filter = 'saturate(0) brightness(0.35) contrast(1.4)';
-        labelsEl.style.opacity = '0.9';
-      } else {
-        labelsEl.style.filter = 'saturate(0) brightness(0.55) contrast(1.2)';
-        labelsEl.style.opacity = '0.85';
-      }
+      labelsEl.style.filter = 'saturate(0) brightness(0) contrast(1.5)';
+      labelsEl.style.opacity = '0.9';
     };
     map.on('zoomend', updateLabels);
     updateLabels();
