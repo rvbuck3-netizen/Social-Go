@@ -52,7 +52,7 @@ const interestIcons = [
   { id: "fitness", icon: Dumbbell, label: "Fitness" },
   { id: "travel", icon: Plane, label: "Travel" },
   { id: "sparkles", icon: Sparkles, label: "Vibes" },
-  { id: "heart", icon: Heart, label: "Love" },
+  { id: "heart", icon: Heart, label: "Social" },
 ];
 
 const moodOptions = [
@@ -62,6 +62,8 @@ const moodOptions = [
   { id: "meeting", label: "Open to meet" },
   { id: "working", label: "Working nearby" },
   { id: "hanging", label: "Hanging out" },
+  { id: "networking", label: "Networking" },
+  { id: "newhere", label: "New in town" },
 ];
 
 export default function Profile() {

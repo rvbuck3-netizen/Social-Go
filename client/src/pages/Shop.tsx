@@ -34,7 +34,7 @@ const subscriptionPlans = [
       "6month": { amount: "$19.99", perMonth: "$3.33/mo", save: "Save 58%" } as PlanPricing,
     },
     features: [
-      { icon: Heart, text: "Unlimited likes" },
+      { icon: Heart, text: "Unlimited interactions" },
       { icon: Eye, text: "See who viewed your profile" },
       { icon: Zap, text: "1 free Boost per month" },
       { icon: Filter, text: "Advanced filters" },
@@ -58,8 +58,8 @@ const subscriptionPlans = [
     features: [
       { icon: Heart, text: "Everything in Go+" },
       { icon: Sparkles, text: "Priority profile — seen first" },
-      { icon: MessageCircle, text: "Message before matching" },
-      { icon: Eye, text: "See who likes you" },
+      { icon: MessageCircle, text: "Message anyone nearby" },
+      { icon: Eye, text: "See who's interested in you" },
       { icon: Zap, text: "3 free Boosts per month" },
       { icon: Star, text: "5 Roses per week" },
     ],
@@ -489,8 +489,8 @@ export default function Shop() {
                 <Heart className="h-4 w-4 text-pink-500" />
               </div>
               <div>
-                <p className="text-xs font-bold">5x matches</p>
-                <p className="text-[11px] text-muted-foreground">Premium users match 5x more often</p>
+                <p className="text-xs font-bold">5x connections</p>
+                <p className="text-[11px] text-muted-foreground">Premium users connect 5x more often</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
@@ -499,7 +499,7 @@ export default function Shop() {
               </div>
               <div>
                 <p className="text-xs font-bold">Message first</p>
-                <p className="text-[11px] text-muted-foreground">Break the ice before matching</p>
+                <p className="text-[11px] text-muted-foreground">Break the ice with anyone nearby</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
@@ -508,7 +508,7 @@ export default function Shop() {
               </div>
               <div>
                 <p className="text-xs font-bold">Full control</p>
-                <p className="text-[11px] text-muted-foreground">See who views and likes your profile</p>
+                <p className="text-[11px] text-muted-foreground">See who views your profile and shows interest</p>
               </div>
             </div>
           </div>
