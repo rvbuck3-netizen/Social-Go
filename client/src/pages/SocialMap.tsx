@@ -196,9 +196,9 @@ export default function SocialMap() {
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
         <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-          opacity={0.9}
+          url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
           className="labels-layer"
+          subdomains="abcd"
         />
         <MapRecenter coords={userLocation} />
         <ZoomControls />
