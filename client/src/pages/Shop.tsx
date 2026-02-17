@@ -133,11 +133,12 @@ function SectionDropdown({
           <p className="text-sm font-semibold">{title}</p>
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-        )}
+        <div className={cn(
+          "h-8 w-8 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+          isOpen && "rotate-180"
+        )}>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
       </button>
       {isOpen && (
         <div className="mt-3">
