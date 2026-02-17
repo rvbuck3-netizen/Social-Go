@@ -180,9 +180,10 @@
   filter: brightness(0.7) contrast(1.1) saturate(0.8);
 }
 
-/* Make city/place labels pop against the dark map */
+/* Make city/place labels clean and modern against satellite imagery */
 .leaflet-tile-pane .labels-layer {
-  filter: brightness(1.4) contrast(1.3);
+  filter: brightness(1.6) contrast(1.1) saturate(0);
+  mix-blend-mode: screen;
 }
 
 /* Hide leaflet controls */
