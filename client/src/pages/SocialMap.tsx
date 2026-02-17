@@ -41,8 +41,8 @@ function ZoomLabelScaler() {
       const zoom = map.getZoom();
       const labelsEl = map.getContainer().querySelector('.labels-layer') as HTMLElement | null;
       if (!labelsEl) return;
-      labelsEl.style.filter = 'saturate(0) brightness(0) contrast(1.5)';
-      labelsEl.style.opacity = '0.9';
+      labelsEl.style.filter = 'saturate(0) brightness(0.4) contrast(3)';
+      labelsEl.style.opacity = '1';
     };
     map.on('zoomend', updateLabels);
     updateLabels();
