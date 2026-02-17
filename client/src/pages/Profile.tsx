@@ -142,86 +142,114 @@ export default function Profile() {
         <h1 className="text-base font-semibold">{user?.username}</h1>
       </div>
 
-      <div className="px-4 pt-5 pb-4">
-        <div className="flex items-center gap-6">
+      <div className="px-5 pt-6 pb-5">
+        <div className="flex items-start gap-5">
           <div className="relative">
             <Avatar
-              className={cn("h-20 w-20 ring-2 ring-offset-2 ring-offset-background", currentTheme?.ring)}
+              className={cn("h-24 w-24 ring-[3px] ring-offset-[3px] ring-offset-background", currentTheme?.ring)}
               data-testid="img-avatar"
             >
               <AvatarImage src={`https://api.dicebear.com/7.x/${selectedAvatar}/svg?seed=${user?.username || 'You'}`} />
-              <AvatarFallback><User className="h-10 w-10" /></AvatarFallback>
+              <AvatarFallback><User className="h-12 w-12" /></AvatarFallback>
             </Avatar>
             <button
-              className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-background border border-border flex items-center justify-center"
+              className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-background border border-border flex items-center justify-center shadow-sm"
               onClick={() => {
                 const idx = avatarStyles.findIndex(a => a.id === selectedAvatar);
                 setSelectedAvatar(avatarStyles[(idx + 1) % avatarStyles.length].id);
               }}
               data-testid="button-change-avatar"
             >
-              <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+              <Camera className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
-          <div className="flex-1 flex items-center justify-around text-center">
-            <div>
-              <p className="font-bold text-lg" data-testid="text-post-count">0</p>
-              <p className="text-xs text-muted-foreground">Posts</p>
+          <div className="flex-1 pt-2">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <p className="text-lg font-bold" data-testid="text-username">{user?.username}</p>
+              {user?.isGoMode && (
+                <Badge variant="secondary" className="text-[10px] gap-1 bg-green-500/10 text-green-600 border-green-500/20" data-testid="badge-go-mode">
+                  <Circle className="h-1.5 w-1.5 fill-green-500 text-green-500" />
+                  Go Mode
+                </Badge>
+              )}
             </div>
-            <div>
-              <p className="font-bold text-lg" data-testid="text-nearby-count">0</p>
-              <p className="text-xs text-muted-foreground">Connections</p>
-            </div>
-            <div>
-              <p className="font-bold text-lg" data-testid="text-coins">{user?.coins || 0}</p>
-              <p className="text-xs text-muted-foreground">Coins</p>
-            </div>
+            {user?.bio ? (
+              <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-bio">{user.bio}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground/50 italic">Tap Edit Profile to add a bio</p>
+            )}
+            {selectedMood && (
+              <Badge variant="secondary" className="mt-2 text-[10px]" data-testid="badge-mood">
+                {moodOptions.find(m => m.id === selectedMood)?.label}
+              </Badge>
+            )}
           </div>
         </div>
-        <div className="mt-3">
-          <p className="text-sm font-semibold" data-testid="text-username">{user?.username}</p>
-          {user?.bio && <p className="text-sm text-muted-foreground mt-0.5" data-testid="text-bio">{user?.bio}</p>}
-          {selectedMood && (
-            <Badge variant="secondary" className="mt-1.5 text-[10px]" data-testid="badge-mood">
-              {moodOptions.find(m => m.id === selectedMood)?.label}
-            </Badge>
-          )}
+
+        {selectedInterests.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-4 flex-wrap">
+            {selectedInterests.map((id) => {
+              const interest = interestIcons.find(i => i.id === id);
+              if (!interest) return null;
+              return (
+                <Badge key={id} variant="outline" className="gap-1 text-[10px] py-0.5" data-testid={`badge-interest-${id}`}>
+                  <interest.icon className="h-3 w-3" />
+                  {interest.label}
+                </Badge>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-3 mt-5">
+          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
+            <p className="font-bold text-xl" data-testid="text-post-count">0</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Posts</p>
+          </div>
+          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
+            <p className="font-bold text-xl" data-testid="text-nearby-count">0</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Connections</p>
+          </div>
+          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
+            <p className="font-bold text-xl" data-testid="text-coins">{user?.coins || 0}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Coins</p>
+          </div>
         </div>
 
         {hasSocials && (
-          <div className="flex items-center gap-3 mt-3 flex-wrap">
+          <div className="flex items-center gap-2 mt-4 flex-wrap">
             {user?.instagram && (
-              <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-instagram">
+              <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-instagram">
                 <Instagram className="h-4 w-4" />
               </a>
             )}
             {user?.twitter && (
-              <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-twitter">
+              <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-twitter">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
             {user?.tiktok && (
-              <a href={`https://tiktok.com/@${user.tiktok}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-tiktok">
+              <a href={`https://tiktok.com/@${user.tiktok}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-tiktok">
                 <SiTiktok className="h-4 w-4" />
               </a>
             )}
             {user?.snapchat && (
-              <a href={`https://snapchat.com/add/${user.snapchat}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-snapchat">
+              <a href={`https://snapchat.com/add/${user.snapchat}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-snapchat">
                 <SiSnapchat className="h-4 w-4" />
               </a>
             )}
             {user?.linkedin && (
-              <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-linkedin">
+              <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-linkedin">
                 <SiLinkedin className="h-4 w-4" />
               </a>
             )}
             {user?.facebook && (
-              <a href={`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-facebook">
+              <a href={`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-facebook">
                 <SiFacebook className="h-4 w-4" />
               </a>
             )}
             {user?.website && (
-              <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground" data-testid="link-website">
+              <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-website">
                 <Globe className="h-4 w-4" />
               </a>
             )}
@@ -229,16 +257,18 @@ export default function Profile() {
         )}
       </div>
 
-      <div className="px-4 py-4 border-t">
+      <div className="px-5 py-5 border-t">
         <button
           type="button"
           className="flex items-center justify-between w-full py-1"
           onClick={() => setShowCustomize(!showCustomize)}
           data-testid="button-toggle-customize"
         >
-          <div className="flex items-center gap-2">
-            <Palette className="h-4 w-4 text-primary shrink-0" />
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customize Profile</p>
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Palette className="h-4 w-4 text-primary shrink-0" />
+            </div>
+            <p className="text-sm font-semibold">Customize Profile</p>
           </div>
           <div className={cn(
             "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
@@ -339,8 +369,13 @@ export default function Profile() {
         </div>}
       </div>
 
-      <div className="px-4 pt-4 pb-4 border-t">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Edit Profile</p>
+      <div className="px-5 pt-5 pb-5 border-t">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+            <User className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-semibold">Edit Profile</p>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => updateProfileMutation.mutate(data))} className="space-y-3">
             <FormField
@@ -363,7 +398,12 @@ export default function Profile() {
                 onClick={() => setShowMoreSocials(!showMoreSocials)}
                 data-testid="button-toggle-more-socials"
               >
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Link Socials</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-semibold">Link Socials</p>
+                </div>
                 <div className={cn(
                   "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
                   showMoreSocials && "rotate-180"
