@@ -169,7 +169,8 @@ export default function SocialMap() {
         />
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-          opacity={0.7}
+          opacity={1}
+          className="labels-layer"
         />
         <MapRecenter coords={userLocation} />
         
