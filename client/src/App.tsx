@@ -1,10 +1,11 @@
 
 import { Switch, Route, Link, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { api } from "@shared/routes";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import SocialMap from "@/pages/SocialMap";
@@ -18,6 +19,11 @@ import { cn } from "@/lib/utils";
 
 function BottomNav() {
   const [location] = useLocation();
+  const { data: profile } = useQuery<any>({
+    queryKey: [api.users.me.path],
+  });
+
+  const isGoMode = profile?.isGoMode === true;
 
   const navItems = [
     { href: "/", icon: MapIcon, label: "Explore" },
@@ -35,7 +41,7 @@ function BottomNav() {
           <Link key={item.href} href={item.href}>
             <span
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 py-2 px-4 cursor-pointer transition-colors",
+                "flex flex-col items-center justify-center gap-0.5 py-2 px-4 cursor-pointer transition-colors relative",
                 isActive ? "text-foreground" : "text-muted-foreground"
               )}
               role="tab"
@@ -43,10 +49,21 @@ function BottomNav() {
               aria-label={item.label}
               data-testid={`nav-${item.label.toLowerCase()}`}
             >
-              <item.icon
-                className={cn("h-6 w-6", isActive && "fill-current")}
-                strokeWidth={isActive ? 2.5 : 1.5}
-              />
+              <span className="relative">
+                <item.icon
+                  className={cn("h-6 w-6", isActive && "fill-current")}
+                  strokeWidth={isActive ? 2.5 : 1.5}
+                />
+                {item.label === "Explore" && (
+                  <span
+                    className={cn(
+                      "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background",
+                      isGoMode ? "bg-green-500" : "bg-red-500"
+                    )}
+                    data-testid="indicator-go-status"
+                  />
+                )}
+              </span>
               <span className="text-[10px] font-medium">{item.label}</span>
             </span>
           </Link>
