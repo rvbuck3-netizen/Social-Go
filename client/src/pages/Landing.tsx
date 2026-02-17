@@ -1,73 +1,95 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MapPin, Shield, Users, Zap, Compass } from "lucide-react";
+import { MapPin, Shield, Users, Zap, Compass, ArrowRight, Globe } from "lucide-react";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-4 py-3 max-w-lg mx-auto">
-          <div className="flex items-center gap-2">
-            <Compass className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold tracking-tight">Social Go</span>
+      <header className="sticky top-0 z-50 glass">
+        <div className="flex items-center justify-between px-5 py-3.5 max-w-lg mx-auto">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
+              <Compass className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-base font-semibold tracking-tight font-display">Social Go</span>
           </div>
           <a href="/api/login" data-testid="button-login-header">
-            <Button size="sm">Sign In</Button>
+            <Button size="sm" variant="outline">Sign In</Button>
           </a>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center px-4">
-        <div className="max-w-lg w-full pt-16 pb-10 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full mb-6">
+      <main className="flex-1 flex flex-col items-center px-5">
+        <div className="max-w-lg w-full pt-20 pb-12 text-center">
+          <div className="inline-flex items-center gap-1.5 bg-primary/8 text-primary text-xs font-medium px-3 py-1.5 rounded-md mb-6">
             <Shield className="h-3 w-3" />
-            Safety is our #1 priority
+            Safety-first social discovery
           </div>
-          <h1 className="text-3xl font-bold tracking-tight leading-tight mb-3" data-testid="text-hero-title">
-            Meet people nearby —<br />without the pressure.
+          <h1 className="text-4xl font-bold tracking-tight leading-[1.15] mb-4 font-display" data-testid="text-hero-title">
+            Meet people nearby,<br />without the pressure
           </h1>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-sm mx-auto">
-            Social Go empowers you to connect confidently with people around you and across the world. Activate Go Mode, share live updates, and instantly discover who's nearby and ready to engage. Build meaningful connections in real time — whether you're stepping out of your comfort zone or expanding your global network.
+          <p className="text-muted-foreground text-[15px] leading-relaxed mb-10 max-w-sm mx-auto">
+            Connect confidently with people around you. Activate Go Mode, share live updates, and discover who's nearby.
           </p>
-          <a href="/api/login" data-testid="button-login-hero">
-            <Button size="lg" className="w-full max-w-xs text-base">
-              Get Started
-            </Button>
-          </a>
-          <p className="text-[11px] text-muted-foreground mt-3">Free to join. No credit card required.</p>
+          <div className="flex flex-col items-center gap-3">
+            <a href="/api/login" data-testid="button-login-hero" className="w-full max-w-xs">
+              <Button size="lg" className="w-full text-[15px] gap-2">
+                Get Started
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </a>
+            <p className="text-xs text-muted-foreground">Free to join. No credit card required.</p>
+          </div>
         </div>
 
-        <div className="max-w-lg w-full space-y-3 pb-16">
+        <div className="max-w-lg w-full pb-20">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-1">How it works</p>
           <div className="grid grid-cols-2 gap-3">
-            <Card className="p-4">
-              <MapPin className="h-5 w-5 text-primary mb-2" />
-              <p className="text-sm font-semibold mb-0.5">Go Mode</p>
+            <Card className="p-5">
+              <div className="h-9 w-9 rounded-md bg-primary/8 flex items-center justify-center mb-3">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <p className="text-sm font-semibold mb-1">Go Mode</p>
               <p className="text-xs text-muted-foreground leading-relaxed">Broadcast your location to nearby people. Auto-expires for safety.</p>
             </Card>
-            <Card className="p-4">
-              <Shield className="h-5 w-5 text-primary mb-2" />
-              <p className="text-sm font-semibold mb-0.5">Privacy First</p>
+            <Card className="p-5">
+              <div className="h-9 w-9 rounded-md bg-emerald-500/8 flex items-center justify-center mb-3">
+                <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-sm font-semibold mb-1">Privacy First</p>
               <p className="text-xs text-muted-foreground leading-relaxed">Your exact location is always hidden. Block and report anyone.</p>
             </Card>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="p-4">
-              <Users className="h-5 w-5 text-primary mb-2" />
-              <p className="text-sm font-semibold mb-0.5">Social Feed</p>
+            <Card className="p-5">
+              <div className="h-9 w-9 rounded-md bg-amber-500/8 flex items-center justify-center mb-3">
+                <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p className="text-sm font-semibold mb-1">Social Feed</p>
               <p className="text-xs text-muted-foreground leading-relaxed">Drop geo-tagged posts and see what's happening around you.</p>
             </Card>
-            <Card className="p-4">
-              <Zap className="h-5 w-5 text-primary mb-2" />
-              <p className="text-sm font-semibold mb-0.5">Get Noticed</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">Boost your profile and stand out on the map with visibility upgrades.</p>
+            <Card className="p-5">
+              <div className="h-9 w-9 rounded-md bg-violet-500/8 flex items-center justify-center mb-3">
+                <Zap className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              </div>
+              <p className="text-sm font-semibold mb-1">Get Noticed</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">Boost your profile and stand out with visibility upgrades.</p>
             </Card>
+          </div>
+
+          <div className="mt-8 rounded-md bg-muted/60 p-5 flex items-start gap-3">
+            <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium mb-0.5">Expand your network globally</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Whether you're stepping out of your comfort zone or networking in a new city, Social Go helps you break the ice with confidence.
+              </p>
+            </div>
           </div>
         </div>
       </main>
 
       <footer className="border-t py-4 text-center">
-        <p className="text-[11px] text-muted-foreground">Social Go {new Date().getFullYear()}</p>
+        <p className="text-xs text-muted-foreground">Social Go {new Date().getFullYear()}</p>
       </footer>
     </div>
   );

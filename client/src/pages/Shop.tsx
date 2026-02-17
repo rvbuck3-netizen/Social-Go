@@ -24,10 +24,8 @@ const subscriptionPlans = [
     name: "Go+",
     tagline: "See more, connect more",
     icon: Star,
-    gradient: "from-yellow-500/20 to-orange-500/10",
-    borderColor: "border-yellow-500/30",
-    iconColor: "text-yellow-500",
-    badgeColor: "bg-yellow-500/10 text-yellow-600",
+    iconColor: "text-amber-500",
+    badgeBg: "bg-amber-500/8",
     prices: {
       weekly: { amount: "$2.99", perMonth: "$11.96/mo" } as PlanPricing,
       monthly: { amount: "$7.99", perMonth: "$7.99/mo" } as PlanPricing,
@@ -45,10 +43,8 @@ const subscriptionPlans = [
     name: "Go Premium",
     tagline: "The ultimate Social Go experience",
     icon: Crown,
-    gradient: "from-purple-500/20 to-pink-500/10",
-    borderColor: "border-purple-500/40",
-    iconColor: "text-purple-500",
-    badgeColor: "bg-purple-500/10 text-purple-600",
+    iconColor: "text-violet-500",
+    badgeBg: "bg-violet-500/8",
     popular: true,
     prices: {
       weekly: { amount: "$4.99", perMonth: "$19.96/mo" } as PlanPricing,
@@ -73,8 +69,8 @@ const boostProducts = [
     subtitle: "30 min of visibility",
     price: "$2.49",
     icon: Zap,
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
+    color: "text-amber-500",
+    bg: "bg-amber-500/8",
   },
   {
     id: "boost-5",
@@ -84,7 +80,7 @@ const boostProducts = [
     priceEach: "$1.50 each",
     icon: Flame,
     color: "text-orange-500",
-    bg: "bg-orange-500/10",
+    bg: "bg-orange-500/8",
     popular: true,
   },
   {
@@ -94,8 +90,8 @@ const boostProducts = [
     price: "$12.49",
     priceEach: "$1.25 each",
     icon: Crown,
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
+    color: "text-violet-500",
+    bg: "bg-violet-500/8",
   },
 ];
 
@@ -157,7 +153,7 @@ export default function Shop() {
 
   if (isLoading) return (
     <div className="h-full flex items-center justify-center">
-      <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+      <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -169,28 +165,28 @@ export default function Shop() {
 
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="shop-container">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-5 py-3 flex items-center justify-between gap-2">
-        <h1 className="text-base font-semibold" data-testid="text-shop-title">Shop</h1>
-        <div className="flex items-center gap-1.5">
-          <Coins className="h-4 w-4 text-yellow-500" />
-          <span className="text-sm font-bold" data-testid="text-coin-balance">{user?.coins || 0}</span>
+      <div className="sticky top-0 z-10 glass border-b border-border/40 px-5 py-3.5 flex items-center justify-between gap-2">
+        <h1 className="text-base font-semibold font-display" data-testid="text-shop-title">Shop</h1>
+        <div className="flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-md">
+          <Coins className="h-3.5 w-3.5 text-amber-500" />
+          <span className="text-sm font-semibold" data-testid="text-coin-balance">{user?.coins || 0}</span>
         </div>
       </div>
 
-      <div className="px-5 pt-5 pb-3">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-5">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
+      <div className="px-5 pt-5 pb-4">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-primary/90 to-primary p-5">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <Crown className="h-5 w-5 text-yellow-300" />
-              <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">Limited time</span>
+              <Crown className="h-4 w-4 text-amber-300" />
+              <span className="text-primary-foreground/70 text-xs font-semibold uppercase tracking-wider">Limited time</span>
             </div>
-            <h2 className="text-white text-xl font-bold mb-1">Get noticed instantly</h2>
-            <p className="text-white/70 text-sm mb-4">Premium members get 3x more connections</p>
+            <h2 className="text-primary-foreground text-xl font-bold font-display mb-1">Get noticed instantly</h2>
+            <p className="text-primary-foreground/70 text-sm mb-4">Premium members get 3x more connections</p>
             <div className="flex items-center gap-3 flex-wrap">
               <Button
-                className="bg-white text-purple-700 border-white font-semibold shadow-lg"
+                className="bg-white text-primary border-white font-semibold"
                 onClick={() => {
                   const el = document.getElementById('subscriptions-section');
                   el?.scrollIntoView({ behavior: 'smooth' });
@@ -200,33 +196,35 @@ export default function Shop() {
                 View Plans
               </Button>
               <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-white/60" />
-                <span className="text-white/60 text-xs">2.4k+ subscribers</span>
+                <Users className="h-3.5 w-3.5 text-primary-foreground/50" />
+                <span className="text-primary-foreground/50 text-xs">2.4k+ subscribers</span>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {user?.isBoosted && user?.boostExpiresAt && (
-        <div className="mx-5 mb-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
-            <Zap className="h-4 w-4 text-green-500" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-green-600 dark:text-green-400" data-testid="text-boost-active">Boost active</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              Expires {new Date(user.boostExpiresAt).toLocaleTimeString()}
-            </p>
-          </div>
+        <div className="mx-5 mb-4">
+          <Card className="p-3 flex items-center gap-3 bg-emerald-500/5 border-emerald-500/15">
+            <div className="h-9 w-9 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <Zap className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400" data-testid="text-boost-active">Boost active</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Expires {new Date(user.boostExpiresAt).toLocaleTimeString()}
+              </p>
+            </div>
+          </Card>
         </div>
       )}
 
-      <div className="px-5 pb-2">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="px-5 pb-3">
+        <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-bold">Quick Boosts</h3>
+          <h3 className="text-sm font-semibold font-display">Quick Boosts</h3>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
           {boostProducts.map((product) => (
@@ -238,7 +236,7 @@ export default function Shop() {
               {product.popular && (
                 <Badge className="absolute -top-2 text-[9px]">Popular</Badge>
               )}
-              <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-2", product.bg)}>
+              <div className={cn("h-10 w-10 rounded-md flex items-center justify-center mb-2.5", product.bg)}>
                 <product.icon className={cn("h-5 w-5", product.color)} />
               </div>
               <span className="text-xs font-bold" data-testid={`text-boost-name-${product.id}`}>{product.name}</span>
@@ -261,13 +259,13 @@ export default function Shop() {
         </div>
       </div>
 
-      <div className="px-5 pt-5 pb-2" id="subscriptions-section">
+      <div className="px-5 pt-5 pb-3" id="subscriptions-section">
         <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-purple-500" />
-            <h3 className="text-sm font-bold">Subscriptions</h3>
+            <Crown className="h-4 w-4 text-violet-500" />
+            <h3 className="text-sm font-semibold font-display">Subscriptions</h3>
           </div>
-          <div className="flex items-center gap-0.5 p-0.5 bg-muted rounded-lg">
+          <div className="flex items-center gap-0.5 p-0.5 bg-muted rounded-md">
             {(Object.keys(billingLabels) as BillingPeriod[]).map((period) => (
               <Button
                 key={period}
@@ -275,7 +273,7 @@ export default function Shop() {
                 variant={billingPeriod === period ? "secondary" : "ghost"}
                 onClick={() => setBillingPeriod(period)}
                 className={cn(
-                  "text-xs font-semibold",
+                  "text-xs font-medium",
                   billingPeriod === period
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground"
@@ -294,14 +292,10 @@ export default function Shop() {
             return (
               <Card
                 key={plan.id}
-                className={cn(
-                  "relative overflow-hidden",
-                  plan.popular ? plan.borderColor : ""
-                )}
+                className={cn("relative overflow-hidden", plan.popular && "ring-1 ring-primary/30")}
                 data-testid={`card-plan-${plan.id}`}
               >
-                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", plan.gradient)} />
-                <div className="relative p-5">
+                <div className="p-5">
                   {plan.popular && (
                     <Badge className="absolute top-3 right-3 text-[10px] gap-1" data-testid={`badge-popular-${plan.id}`}>
                       <Sparkles className="h-3 w-3" />
@@ -309,29 +303,29 @@ export default function Shop() {
                     </Badge>
                   )}
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", plan.badgeColor)}>
+                    <div className={cn("h-10 w-10 rounded-md flex items-center justify-center", plan.badgeBg)}>
                       <plan.icon className={cn("h-5 w-5", plan.iconColor)} />
                     </div>
                     <div>
-                      <p className="font-bold" data-testid={`text-plan-name-${plan.id}`}>{plan.name}</p>
+                      <p className="font-bold font-display" data-testid={`text-plan-name-${plan.id}`}>{plan.name}</p>
                       <p className="text-xs text-muted-foreground">{plan.tagline}</p>
                     </div>
                   </div>
 
                   <div className="flex items-baseline gap-1.5 mb-4">
-                    <span className="text-3xl font-extrabold" data-testid={`text-plan-price-${plan.id}`}>{pricing.amount}</span>
+                    <span className="text-3xl font-extrabold font-display" data-testid={`text-plan-price-${plan.id}`}>{pricing.amount}</span>
                     <span className="text-sm text-muted-foreground">/ {billingPeriod === "weekly" ? "week" : billingPeriod === "monthly" ? "month" : "6 months"}</span>
                     {pricing.save && (
-                      <Badge variant="secondary" className="ml-2 text-xs bg-green-500/10 text-green-600 border-green-500/20" data-testid={`text-plan-save-${plan.id}`}>
+                      <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/8 text-emerald-600 dark:text-emerald-400" data-testid={`text-plan-save-${plan.id}`}>
                         {pricing.save}
                       </Badge>
                     )}
                   </div>
 
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2.5 mb-5">
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2.5">
-                        <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <div className="h-5 w-5 rounded-full bg-primary/8 flex items-center justify-center shrink-0">
                           <Check className="h-3 w-3 text-primary" />
                         </div>
                         <span className="text-sm">{feature.text}</span>
@@ -359,26 +353,26 @@ export default function Shop() {
           className="w-full flex items-center gap-3 text-left py-1 mb-1"
           data-testid="button-toggle-shoutouts"
         >
-          <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+          <div className="h-9 w-9 rounded-md bg-orange-500/8 flex items-center justify-center shrink-0">
             <Sparkles className="h-4.5 w-4.5 text-orange-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold">Shoutouts</p>
+            <p className="text-sm font-semibold font-display">Shoutouts</p>
             <p className="text-xs text-muted-foreground">Stand out from the crowd</p>
           </div>
           <div className={cn(
-            "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+            "h-7 w-7 rounded-md flex items-center justify-center shrink-0 bg-muted transition-transform",
             openSection === "shoutouts" && "rotate-180"
           )}>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
         </button>
         {openSection === "shoutouts" && (
-          <div className="mt-3 space-y-1.5">
-            <p className="text-xs text-muted-foreground mb-3">Send a Shoutout to get noticed. Your profile jumps to the top of their list — they'll see you before anyone else.</p>
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground mb-3">Send a Shoutout to get noticed. Your profile jumps to the top of their list.</p>
             {shoutoutPacks.map((pack) => (
-              <div key={pack.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40">
-                <div className="h-9 w-9 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+              <Card key={pack.id} className="flex items-center gap-3 p-3">
+                <div className="h-9 w-9 rounded-md bg-orange-500/8 flex items-center justify-center shrink-0">
                   <Sparkles className="h-4 w-4 text-orange-500" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -403,7 +397,7 @@ export default function Shop() {
                 >
                   {pack.price}
                 </Button>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -415,27 +409,27 @@ export default function Shop() {
           className="w-full flex items-center gap-3 text-left py-1 mb-1"
           data-testid="button-toggle-social-go-tokens"
         >
-          <div className="h-9 w-9 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
-            <Coins className="h-4.5 w-4.5 text-yellow-500" />
+          <div className="h-9 w-9 rounded-md bg-amber-500/8 flex items-center justify-center shrink-0">
+            <Coins className="h-4.5 w-4.5 text-amber-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold">Social Go Tokens</p>
+            <p className="text-sm font-semibold font-display">Social Go Tokens</p>
             <p className="text-xs text-muted-foreground">Premium currency that never expires</p>
           </div>
           <div className={cn(
-            "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+            "h-7 w-7 rounded-md flex items-center justify-center shrink-0 bg-muted transition-transform",
             openSection === "tokens" && "rotate-180"
           )}>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
         </button>
         {openSection === "tokens" && (
-          <div className="mt-3 space-y-1.5">
-            <p className="text-xs text-muted-foreground mb-3">Use tokens to extend Go Mode, send gifts, and tip profiles. They never expire so you can use them whenever you want.</p>
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground mb-3">Use tokens to extend Go Mode, send gifts, and tip profiles. They never expire.</p>
             {tokenPacks.map((pack) => (
-              <div key={pack.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40">
-                <div className="h-9 w-9 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
-                  <Coins className="h-4 w-4 text-yellow-500" />
+              <Card key={pack.id} className="flex items-center gap-3 p-3">
+                <div className="h-9 w-9 rounded-md bg-amber-500/8 flex items-center justify-center shrink-0">
+                  <Coins className="h-4 w-4 text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -449,7 +443,7 @@ export default function Shop() {
                       <span className="text-[11px] text-muted-foreground">{pack.priceEach}</span>
                     )}
                     {pack.bonus && (
-                      <span className="text-[11px] font-semibold text-green-600 dark:text-green-400">{pack.bonus}</span>
+                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">{pack.bonus}</span>
                     )}
                   </div>
                 </div>
@@ -462,57 +456,57 @@ export default function Shop() {
                 >
                   {pack.price}
                 </Button>
-              </div>
+              </Card>
             ))}
           </div>
         )}
       </div>
 
       <div className="px-5 pt-6 pb-3">
-        <div className="rounded-2xl bg-muted/50 p-5">
+        <Card className="p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Shield className="h-4 w-4 text-green-500" />
-            <h3 className="text-sm font-bold">Why upgrade?</h3>
+            <Shield className="h-4 w-4 text-emerald-500" />
+            <h3 className="text-sm font-semibold font-display">Why upgrade?</h3>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex items-start gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Eye className="h-4 w-4 text-purple-500" />
+              <div className="h-8 w-8 rounded-md bg-violet-500/8 flex items-center justify-center shrink-0 mt-0.5">
+                <Eye className="h-4 w-4 text-violet-500" />
               </div>
               <div>
-                <p className="text-xs font-bold">3x views</p>
-                <p className="text-[11px] text-muted-foreground">Boosted profiles get 3x more profile views</p>
+                <p className="text-xs font-semibold">3x views</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">Boosted profiles get 3x more profile views</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="h-8 w-8 rounded-md bg-pink-500/8 flex items-center justify-center shrink-0 mt-0.5">
                 <Heart className="h-4 w-4 text-pink-500" />
               </div>
               <div>
-                <p className="text-xs font-bold">5x connections</p>
-                <p className="text-[11px] text-muted-foreground">Premium users connect 5x more often</p>
+                <p className="text-xs font-semibold">5x connections</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">Premium users connect 5x more often</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="h-8 w-8 rounded-md bg-blue-500/8 flex items-center justify-center shrink-0 mt-0.5">
                 <MessageCircle className="h-4 w-4 text-blue-500" />
               </div>
               <div>
-                <p className="text-xs font-bold">Message first</p>
-                <p className="text-[11px] text-muted-foreground">Break the ice with anyone nearby</p>
+                <p className="text-xs font-semibold">Message first</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">Break the ice with anyone nearby</p>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Shield className="h-4 w-4 text-green-500" />
+              <div className="h-8 w-8 rounded-md bg-emerald-500/8 flex items-center justify-center shrink-0 mt-0.5">
+                <Shield className="h-4 w-4 text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs font-bold">Full control</p>
-                <p className="text-[11px] text-muted-foreground">See who views your profile and shows interest</p>
+                <p className="text-xs font-semibold">Full control</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">See who views your profile and shows interest</p>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <p className="text-[10px] text-muted-foreground text-center px-5 pb-6 pt-2">

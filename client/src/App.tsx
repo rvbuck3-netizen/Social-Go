@@ -27,28 +27,26 @@ function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/50 flex items-center justify-around z-[2000] pb-safe" role="navigation" aria-label="Main navigation" data-testid="nav-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border/40 flex items-center justify-around z-[2000] pb-safe" role="navigation" aria-label="Main navigation" data-testid="nav-bottom">
       {navItems.map((item) => {
         const isActive = location === item.href;
         return (
           <Link key={item.href} href={item.href}>
             <span
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 py-2 px-4 cursor-pointer transition-colors relative",
-                isActive ? "text-foreground" : "text-muted-foreground"
+                "flex flex-col items-center justify-center gap-1 py-2.5 px-4 cursor-pointer transition-colors relative",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
               role="tab"
               aria-selected={isActive}
               aria-label={item.label}
               data-testid={`nav-${item.label.toLowerCase()}`}
             >
-              <span className="relative">
-                <item.icon
-                  className={cn("h-6 w-6", isActive && "fill-current")}
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                />
-              </span>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <item.icon
+                className="h-5 w-5"
+                strokeWidth={isActive ? 2.2 : 1.5}
+              />
+              <span className={cn("text-[10px]", isActive ? "font-semibold" : "font-medium")}>{item.label}</span>
             </span>
           </Link>
         );
@@ -82,7 +80,7 @@ function AppContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
-        <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+        <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

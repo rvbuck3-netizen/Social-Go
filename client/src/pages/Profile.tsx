@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
-  User, Instagram, Twitter, Globe, ChevronDown, ChevronUp,
-  Palette, Sparkles, Camera, Circle, Heart, Flame, Star, Zap, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane
+  User, Instagram, Twitter, Globe, ChevronDown,
+  Palette, Sparkles, Camera, Circle, Heart, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane
 } from "lucide-react";
 import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 import { useForm } from "react-hook-form";
@@ -131,7 +132,7 @@ export default function Profile() {
 
   if (isLoading) return (
     <div className="h-full flex items-center justify-center">
-      <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+      <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -140,37 +141,37 @@ export default function Profile() {
 
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="profile-container">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3">
-        <h1 className="text-base font-semibold">{user?.username}</h1>
+      <div className="sticky top-0 z-10 glass border-b border-border/40 px-5 py-3.5">
+        <h1 className="text-base font-semibold font-display">{user?.username}</h1>
       </div>
 
       <div className="px-5 pt-6 pb-5">
         <div className="flex items-start gap-5">
           <div className="relative">
             <Avatar
-              className={cn("h-24 w-24 ring-[3px] ring-offset-[3px] ring-offset-background", currentTheme?.ring)}
+              className={cn("h-20 w-20 ring-[3px] ring-offset-[3px] ring-offset-background", currentTheme?.ring)}
               data-testid="img-avatar"
             >
               <AvatarImage src={`https://api.dicebear.com/7.x/${selectedAvatar}/svg?seed=${user?.username || 'You'}`} />
-              <AvatarFallback><User className="h-12 w-12" /></AvatarFallback>
+              <AvatarFallback className="bg-muted"><User className="h-10 w-10 text-muted-foreground" /></AvatarFallback>
             </Avatar>
             <button
-              className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-background border border-border flex items-center justify-center shadow-sm"
+              className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-background border border-border flex items-center justify-center shadow-sm"
               onClick={() => {
                 const idx = avatarStyles.findIndex(a => a.id === selectedAvatar);
                 setSelectedAvatar(avatarStyles[(idx + 1) % avatarStyles.length].id);
               }}
               data-testid="button-change-avatar"
             >
-              <Camera className="h-4 w-4 text-muted-foreground" />
+              <Camera className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
           </div>
-          <div className="flex-1 pt-2">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <p className="text-lg font-bold" data-testid="text-username">{user?.username}</p>
+          <div className="flex-1 pt-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <p className="text-lg font-bold font-display" data-testid="text-username">{user?.username}</p>
               {user?.isGoMode && (
-                <Badge variant="secondary" className="text-[10px] gap-1 bg-green-500/10 text-green-600 border-green-500/20" data-testid="badge-go-mode">
-                  <Circle className="h-1.5 w-1.5 fill-green-500 text-green-500" />
+                <Badge variant="secondary" className="text-[10px] gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" data-testid="badge-go-mode">
+                  <Circle className="h-1.5 w-1.5 fill-emerald-500 text-emerald-500" />
                   Go Mode
                 </Badge>
               )}
@@ -203,55 +204,55 @@ export default function Profile() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-3 mt-5">
-          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
-            <p className="font-bold text-xl" data-testid="text-post-count">0</p>
+        <div className="grid grid-cols-3 gap-2.5 mt-5">
+          <Card className="py-3.5 text-center">
+            <p className="font-bold text-xl font-display" data-testid="text-post-count">0</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Posts</p>
-          </div>
-          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
-            <p className="font-bold text-xl" data-testid="text-nearby-count">0</p>
+          </Card>
+          <Card className="py-3.5 text-center">
+            <p className="font-bold text-xl font-display" data-testid="text-nearby-count">0</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Connections</p>
-          </div>
-          <div className="bg-muted/50 rounded-lg py-3.5 text-center">
-            <p className="font-bold text-xl" data-testid="text-coins">{user?.coins || 0}</p>
+          </Card>
+          <Card className="py-3.5 text-center">
+            <p className="font-bold text-xl font-display" data-testid="text-coins">{user?.coins || 0}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Coins</p>
-          </div>
+          </Card>
         </div>
 
         {hasSocials && (
           <div className="flex items-center gap-2 mt-4 flex-wrap">
             {user?.instagram && (
-              <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-instagram">
+              <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-instagram">
                 <Instagram className="h-4 w-4" />
               </a>
             )}
             {user?.twitter && (
-              <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-twitter">
+              <a href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-twitter">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
             {user?.tiktok && (
-              <a href={`https://tiktok.com/@${user.tiktok}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-tiktok">
+              <a href={`https://tiktok.com/@${user.tiktok}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-tiktok">
                 <SiTiktok className="h-4 w-4" />
               </a>
             )}
             {user?.snapchat && (
-              <a href={`https://snapchat.com/add/${user.snapchat}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-snapchat">
+              <a href={`https://snapchat.com/add/${user.snapchat}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-snapchat">
                 <SiSnapchat className="h-4 w-4" />
               </a>
             )}
             {user?.linkedin && (
-              <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-linkedin">
+              <a href={`https://linkedin.com/in/${user.linkedin}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-linkedin">
                 <SiLinkedin className="h-4 w-4" />
               </a>
             )}
             {user?.facebook && (
-              <a href={`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-facebook">
+              <a href={`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-facebook">
                 <SiFacebook className="h-4 w-4" />
               </a>
             )}
             {user?.website && (
-              <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground" data-testid="link-website">
+              <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-md bg-muted/60 flex items-center justify-center text-muted-foreground hover-elevate" data-testid="link-website">
                 <Globe className="h-4 w-4" />
               </a>
             )}
@@ -259,7 +260,7 @@ export default function Profile() {
         )}
       </div>
 
-      <div className="px-5 py-5 border-t">
+      <div className="px-5 py-5 border-t border-border/60">
         <button
           type="button"
           className="flex items-center justify-between w-full py-1"
@@ -267,22 +268,22 @@ export default function Profile() {
           data-testid="button-toggle-customize"
         >
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-md bg-primary/8 flex items-center justify-center">
               <Palette className="h-4 w-4 text-primary shrink-0" />
             </div>
             <p className="text-sm font-semibold">Customize Profile</p>
           </div>
           <div className={cn(
-            "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+            "h-7 w-7 rounded-md flex items-center justify-center shrink-0 bg-muted transition-transform",
             showCustomize && "rotate-180"
           )}>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
         </button>
 
-        {showCustomize && <div className="space-y-4 mt-3">
+        {showCustomize && <div className="space-y-5 mt-4">
           <div>
-            <p className="text-xs font-medium mb-2">Profile color</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Profile color</p>
             <div className="flex items-center gap-2 flex-wrap">
               {themeColors.map((theme) => (
                 <button
@@ -290,7 +291,7 @@ export default function Profile() {
                   className={cn(
                     "h-7 w-7 rounded-full transition-all",
                     theme.color,
-                    selectedTheme === theme.id ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110" : "opacity-70"
+                    selectedTheme === theme.id ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110" : "opacity-60"
                   )}
                   onClick={() => setSelectedTheme(theme.id)}
                   data-testid={`button-theme-${theme.id}`}
@@ -300,7 +301,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <p className="text-xs font-medium mb-2">Avatar style</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Avatar style</p>
             <div className="flex items-center gap-1.5 flex-wrap">
               {avatarStyles.map((style) => (
                 <Button
@@ -317,7 +318,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <p className="text-xs font-medium mb-2">Map marker style</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Map marker style</p>
             <div className="flex items-center gap-1.5 flex-wrap">
               {markerStyles.map((style) => (
                 <Button
@@ -334,7 +335,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <p className="text-xs font-medium mb-2">Current mood</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Current mood</p>
             <div className="flex items-center gap-1.5 flex-wrap">
               {moodOptions.map((mood) => (
                 <Button
@@ -351,7 +352,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <p className="text-xs font-medium mb-2">Interests</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Interests</p>
             <div className="flex items-center gap-1.5 flex-wrap">
               {interestIcons.map((interest) => (
                 <Button
@@ -371,9 +372,9 @@ export default function Profile() {
         </div>}
       </div>
 
-      <div className="px-5 pt-5 pb-5 border-t">
+      <div className="px-5 pt-5 pb-5 border-t border-border/60">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+          <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
             <User className="h-4 w-4 text-muted-foreground" />
           </div>
           <p className="text-sm font-semibold">Edit Profile</p>
@@ -385,7 +386,7 @@ export default function Profile() {
               name="bio"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold">Bio</FormLabel>
+                  <FormLabel className="text-sm font-medium">Bio</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Tell us about yourself" className="resize-none text-sm" {...field} data-testid="input-bio" />
                   </FormControl>
@@ -401,13 +402,13 @@ export default function Profile() {
                 data-testid="button-toggle-more-socials"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
                     <Globe className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <p className="text-sm font-semibold">Link Socials</p>
                 </div>
                 <div className={cn(
-                  "h-7 w-7 rounded-full flex items-center justify-center shrink-0 bg-muted transition-transform",
+                  "h-7 w-7 rounded-md flex items-center justify-center shrink-0 bg-muted transition-transform",
                   showMoreSocials && "rotate-180"
                 )}>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -416,104 +417,48 @@ export default function Profile() {
 
               {showMoreSocials && (
                 <div className="space-y-3 mt-3">
-                  <FormField
-                    control={form.control}
-                    name="instagram"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="twitter"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <Twitter className="h-3.5 w-3.5 text-sky-500" /> X
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="tiktok"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <SiTiktok className="h-3.5 w-3.5" /> TikTok
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-tiktok" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="snapchat"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <SiSnapchat className="h-3.5 w-3.5 text-yellow-400" /> Snapchat
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" className="text-sm" {...field} data-testid="input-snapchat" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="linkedin"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <SiLinkedin className="h-3.5 w-3.5 text-blue-600" /> LinkedIn
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="facebook"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <SiFacebook className="h-3.5 w-3.5 text-blue-500" /> Facebook
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="username or profile ID" className="text-sm" {...field} data-testid="input-facebook" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="website"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-xs">
-                          <Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="instagram" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><Instagram className="h-3.5 w-3.5 text-pink-500" /> Instagram</FormLabel>
+                      <FormControl><Input placeholder="username" className="text-sm" {...field} data-testid="input-instagram" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="twitter" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><Twitter className="h-3.5 w-3.5 text-sky-500" /> X</FormLabel>
+                      <FormControl><Input placeholder="username" className="text-sm" {...field} data-testid="input-twitter" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="tiktok" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><SiTiktok className="h-3.5 w-3.5" /> TikTok</FormLabel>
+                      <FormControl><Input placeholder="username" className="text-sm" {...field} data-testid="input-tiktok" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="snapchat" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><SiSnapchat className="h-3.5 w-3.5 text-yellow-400" /> Snapchat</FormLabel>
+                      <FormControl><Input placeholder="username" className="text-sm" {...field} data-testid="input-snapchat" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="linkedin" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><SiLinkedin className="h-3.5 w-3.5 text-blue-600" /> LinkedIn</FormLabel>
+                      <FormControl><Input placeholder="username or profile slug" className="text-sm" {...field} data-testid="input-linkedin" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="facebook" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><SiFacebook className="h-3.5 w-3.5 text-blue-500" /> Facebook</FormLabel>
+                      <FormControl><Input placeholder="username or profile ID" className="text-sm" {...field} data-testid="input-facebook" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="website" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5 text-xs"><Globe className="h-3.5 w-3.5 text-muted-foreground" /> Website</FormLabel>
+                      <FormControl><Input placeholder="https://..." className="text-sm" {...field} data-testid="input-website" /></FormControl>
+                    </FormItem>
+                  )} />
                 </div>
               )}
             </div>

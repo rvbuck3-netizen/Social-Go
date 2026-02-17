@@ -6,7 +6,7 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, ShieldAlert, Ban, Flag, Locate } from "lucide-react";
+import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, Ban, Flag, Locate, Compass } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -38,7 +38,6 @@ function ZoomLabelScaler() {
   const map = useMap();
   useEffect(() => {
     const updateLabels = () => {
-      const zoom = map.getZoom();
       const labelsEl = map.getContainer().querySelector('.labels-layer') as HTMLElement | null;
       if (!labelsEl) return;
       labelsEl.style.filter = 'invert(1) saturate(0) brightness(2) contrast(2)';
@@ -54,27 +53,23 @@ function ZoomLabelScaler() {
 function ZoomControls() {
   const map = useMap();
   return (
-    <div className="absolute right-4 top-16 z-[1000] flex flex-col gap-2">
-      <Button
-        size="icon"
-        variant="secondary"
-        className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
+    <div className="absolute right-4 top-20 z-[1000] flex flex-col gap-1.5">
+      <button
+        className="h-10 w-10 rounded-md glass flex items-center justify-center shadow-md"
         onClick={() => map.zoomIn()}
         aria-label="Zoom in"
         data-testid="button-zoom-in"
       >
-        <Plus className="h-5 w-5" />
-      </Button>
-      <Button
-        size="icon"
-        variant="secondary"
-        className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
+        <Plus className="h-4 w-4" />
+      </button>
+      <button
+        className="h-10 w-10 rounded-md glass flex items-center justify-center shadow-md"
         onClick={() => map.zoomOut()}
         aria-label="Zoom out"
         data-testid="button-zoom-out"
       >
-        <Minus className="h-5 w-5" />
-      </Button>
+        <Minus className="h-4 w-4" />
+      </button>
     </div>
   );
 }
@@ -181,9 +176,9 @@ export default function SocialMap() {
 
     const interval = setInterval(() => {
       navigator.geolocation.getCurrentPosition((pos) => {
-        statusMutation.mutate({ 
-          latitude: pos.coords.latitude, 
-          longitude: pos.coords.longitude 
+        statusMutation.mutate({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
         });
       });
     }, 30000);
@@ -194,7 +189,7 @@ export default function SocialMap() {
   if (!userLocation) return (
     <div className="h-full flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+        <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         <span className="text-sm text-muted-foreground">Finding your location...</span>
       </div>
     </div>
@@ -202,14 +197,14 @@ export default function SocialMap() {
 
   return (
     <div className="relative h-full w-full" data-testid="map-container">
-      <MapContainer 
-        center={userLocation} 
-        zoom={16} 
+      <MapContainer
+        center={userLocation}
+        zoom={16}
         className="h-full w-full z-0"
         zoomControl={false}
         attributionControl={false}
       >
-        <TileLayer 
+        <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
         <TileLayer
@@ -222,8 +217,8 @@ export default function SocialMap() {
         <ZoomLabelScaler />
         <MapRecenter coords={userLocation} />
         <ZoomControls />
-        
-        <Marker 
+
+        <Marker
           position={userLocation}
           icon={new L.DivIcon({
             html: user?.isGoMode
@@ -268,16 +263,16 @@ export default function SocialMap() {
         </Marker>
 
         {posts?.filter((post) => post.latitude != null && post.longitude != null).map((post) => (
-          <Marker 
-            key={post.id} 
+          <Marker
+            key={post.id}
             position={[post.latitude, post.longitude]}
             icon={new L.DivIcon({
               html: `<div class="post-marker">
                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}" />
                      </div>`,
               className: "",
-              iconSize: [34, 34],
-              iconAnchor: [17, 17]
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
             })}
           >
             <Popup className="modern-popup">
@@ -299,8 +294,8 @@ export default function SocialMap() {
         ))}
 
         {nearbyUsers?.filter(u => u.userId !== user?.userId).map((u) => (
-          <Marker 
-            key={u.id} 
+          <Marker
+            key={u.id}
             position={[u.latitude, u.longitude]}
             icon={new L.DivIcon({
               html: `<div class="nearby-user-marker ${u.isBoosted ? 'boosted' : ''}">
@@ -323,24 +318,24 @@ export default function SocialMap() {
                     <p className="popup-label text-[11px]">Nearby</p>
                   </div>
                 </div>
-                
+
                 {(u.instagram || u.twitter || u.website) && (
                   <div className="popup-divider border-t mx-4" />
                 )}
                 {(u.instagram || u.twitter || u.website) && (
                   <div className="flex items-center gap-0.5 px-2 py-1.5">
                     {u.instagram && (
-                      <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-instagram-${u.userId}`}>
+                      <a href={`https://instagram.com/${u.instagram}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md hover-elevate" data-testid={`link-instagram-${u.userId}`}>
                         <Instagram className="h-4 w-4 text-pink-400" />
                       </a>
                     )}
                     {u.twitter && (
-                      <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-twitter-${u.userId}`}>
+                      <a href={`https://twitter.com/${u.twitter}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md hover-elevate" data-testid={`link-twitter-${u.userId}`}>
                         <Twitter className="h-4 w-4 text-sky-400" />
                       </a>
                     )}
                     {u.website && (
-                      <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10" data-testid={`link-website-${u.userId}`}>
+                      <a href={u.website.startsWith('http') ? u.website : `https://${u.website}`} target="_blank" rel="noopener noreferrer" className="h-9 w-9 flex items-center justify-center rounded-md hover-elevate" data-testid={`link-website-${u.userId}`}>
                         <Globe className="h-4 w-4 text-white/50" />
                       </a>
                     )}
@@ -350,7 +345,7 @@ export default function SocialMap() {
                 <div className="popup-divider border-t mx-4" />
                 <div className="flex items-center gap-0.5 px-2 py-1.5">
                   <button
-                    className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10"
+                    className="h-9 w-9 flex items-center justify-center rounded-md hover-elevate"
                     onClick={() => blockMutation.mutate(u.userId)}
                     disabled={blockMutation.isPending}
                     data-testid={`button-block-${u.userId}`}
@@ -358,7 +353,7 @@ export default function SocialMap() {
                     <Ban className="h-4 w-4 text-white/40" />
                   </button>
                   <button
-                    className="h-9 w-9 flex items-center justify-center rounded-md transition-colors hover:bg-white/10"
+                    className="h-9 w-9 flex items-center justify-center rounded-md hover-elevate"
                     onClick={() => reportMutation.mutate({ reportedUserId: u.userId, reason: "stalking" })}
                     disabled={reportMutation.isPending}
                     data-testid={`button-report-${u.userId}`}
@@ -374,10 +369,8 @@ export default function SocialMap() {
       </MapContainer>
 
       <div className="absolute top-4 right-4 z-[1000]">
-        <Button 
-          size="icon" 
-          variant="secondary" 
-          className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm h-11 w-11"
+        <button
+          className="h-10 w-10 rounded-md glass flex items-center justify-center shadow-md"
           onClick={() => {
              navigator.geolocation.getCurrentPosition((pos) => {
                setUserLocation([pos.coords.latitude, pos.coords.longitude]);
@@ -386,49 +379,50 @@ export default function SocialMap() {
           aria-label="Recenter on your location"
           data-testid="button-recenter"
         >
-          <Locate className="h-5 w-5" />
-        </Button>
+          <Locate className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="absolute top-4 left-4 z-[1000]">
-        <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-green-500 animate-pulse" : "bg-red-500")} />
-          <span className="text-xs font-bold uppercase tracking-widest">Social Go</span>
+        <div className="glass px-3.5 py-2 rounded-md shadow-md flex items-center gap-2">
+          <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-emerald-500 animate-pulse" : "bg-red-500")} />
+          <Compass className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-semibold tracking-wide font-display">Social Go</span>
         </div>
       </div>
 
       <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
         <DialogTrigger asChild>
-          <Button 
-            className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl z-[1000]"
+          <Button
+            className="absolute bottom-20 right-4 h-12 w-12 rounded-md shadow-lg z-[1000]"
             size="icon"
             aria-label="Create a new post"
             data-testid="button-create-post"
           >
-            <Plus className="h-7 w-7" />
+            <Plus className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Share an update</DialogTitle>
+            <DialogTitle className="font-display">Share an update</DialogTitle>
           </DialogHeader>
 
           <div className={cn(
-            "flex items-center gap-3 p-3 rounded-lg border",
-            user?.isGoMode ? "bg-green-500/10 border-green-500/20" : "bg-muted/50 border-border/50"
+            "flex items-center gap-3 p-3 rounded-md border",
+            user?.isGoMode ? "bg-emerald-500/5 border-emerald-500/15" : "bg-muted/50 border-border/50"
           )} data-testid="post-location-status">
             <div className={cn(
-              "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
-              user?.isGoMode ? "bg-green-500/20" : "bg-muted"
+              "h-8 w-8 rounded-md flex items-center justify-center shrink-0",
+              user?.isGoMode ? "bg-emerald-500/10" : "bg-muted"
             )}>
               {user?.isGoMode ? (
-                <Navigation className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <Navigation className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               ) : (
                 <EyeOff className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
             <div>
-              <p className={cn("text-xs font-semibold", user?.isGoMode ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}>
+              <p className={cn("text-xs font-semibold", user?.isGoMode ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}>
                 {user?.isGoMode ? "Go Mode — location will be shared" : "Away Mode — location hidden"}
               </p>
               <p className="text-[11px] text-muted-foreground">
@@ -445,8 +439,8 @@ export default function SocialMap() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea 
-                        placeholder="What's happening here?" 
+                      <Textarea
+                        placeholder="What's happening here?"
                         className="resize-none min-h-[100px]"
                         {...field}
                         data-testid="input-post-content"
@@ -455,13 +449,13 @@ export default function SocialMap() {
                   </FormItem>
                 )}
               />
-              
+
               {user?.isGoMode && (
                 <FormField
                   control={form.control}
                   name="hideExactLocation"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between gap-2 rounded-lg border p-3">
+                    <FormItem className="flex flex-row items-center justify-between gap-2 rounded-md border p-3">
                       <div className="space-y-0.5">
                         <FormLabel className="flex items-center gap-2">
                           <EyeOff className="h-4 w-4 text-muted-foreground" />

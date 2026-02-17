@@ -48,12 +48,12 @@ export default function Feed() {
   if (isLoading) {
     return (
       <div className="h-full overflow-y-auto">
-        <div className="border-b px-4 py-3">
+        <div className="border-b px-5 py-3.5">
           <h1 className="text-base font-semibold" data-testid="text-feed-title">Feed</h1>
         </div>
-        <div className="divide-y">
+        <div className="divide-y divide-border/60">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 space-y-3">
+            <div key={i} className="p-5 space-y-3">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="space-y-1.5 flex-1">
@@ -63,11 +63,6 @@ export default function Feed() {
               </div>
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
-              <div className="flex gap-4 pt-1">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-4 rounded-full" />
-              </div>
             </div>
           ))}
         </div>
@@ -77,27 +72,24 @@ export default function Feed() {
 
   return (
     <div className="h-full overflow-y-auto pb-20" data-testid="feed-container">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Compass className="h-5 w-5 text-primary" />
-          <h1 className="text-base font-semibold" data-testid="text-feed-title">Nearby</h1>
-        </div>
-        <Badge variant="secondary" className="text-[10px] gap-1" data-testid="badge-post-count">
+      <div className="sticky top-0 z-10 glass border-b border-border/40 px-5 py-3.5 flex items-center justify-between gap-2">
+        <h1 className="text-base font-semibold font-display" data-testid="text-feed-title">Nearby</h1>
+        <Badge variant="secondary" className="text-[10px] font-medium" data-testid="badge-post-count">
           {posts?.length || 0} updates
         </Badge>
       </div>
 
-      <div className="divide-y">
-        {posts?.map((post, index) => {
+      <div className="divide-y divide-border/60">
+        {posts?.map((post) => {
           const isLiked = likedPosts.has(post.id);
           const isSaved = savedPosts.has(post.id);
           return (
-            <div key={post.id} className="px-4 py-4" data-testid={`post-item-${post.id}`}>
+            <div key={post.id} className="px-5 py-4" data-testid={`post-item-${post.id}`}>
               <div className="flex gap-3">
                 <button onClick={() => setLocation(`/user/${post.authorName}`)} className="shrink-0" data-testid={`button-avatar-${post.id}`}>
-                  <Avatar className="h-10 w-10 ring-1 ring-border">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
-                    <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                    <AvatarFallback className="bg-muted"><User className="h-4 w-4 text-muted-foreground" /></AvatarFallback>
                   </Avatar>
                 </button>
                 <div className="flex-1 min-w-0">
@@ -114,21 +106,21 @@ export default function Feed() {
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                       </span>
                     </div>
-                    <button className="text-muted-foreground shrink-0 p-1" data-testid={`button-more-${post.id}`}>
+                    <button className="text-muted-foreground shrink-0 p-1 rounded-md" data-testid={`button-more-${post.id}`}>
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1 mt-0.5 mb-1.5">
+                  <div className="flex items-center gap-1 mt-0.5 mb-2">
                     {post.latitude != null && post.longitude != null ? (
                       <>
-                        <MapPin className="h-3 w-3 text-primary/70" />
-                        <span className="text-[11px] text-primary/70 font-medium">{getVibe(post.id)}</span>
+                        <MapPin className="h-3 w-3 text-primary/60" />
+                        <span className="text-[11px] text-primary/60 font-medium">{getVibe(post.id)}</span>
                       </>
                     ) : (
                       <>
-                        <Compass className="h-3 w-3 text-muted-foreground/70" />
-                        <span className="text-[11px] text-muted-foreground/70 font-medium">Shared an update</span>
+                        <Compass className="h-3 w-3 text-muted-foreground/60" />
+                        <span className="text-[11px] text-muted-foreground/60 font-medium">Shared an update</span>
                       </>
                     )}
                   </div>
@@ -136,9 +128,9 @@ export default function Feed() {
                   <p className="text-[15px] leading-relaxed" data-testid={`text-content-${post.id}`}>{post.content}</p>
 
                   <div className="flex items-center justify-between mt-3 -ml-1.5">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
                       <button
-                        className="flex items-center gap-1.5 p-1.5 transition-colors"
+                        className="flex items-center gap-1.5 p-2 rounded-md transition-colors"
                         onClick={() => toggleLike(post.id)}
                         data-testid={`button-like-${post.id}`}
                       >
@@ -151,15 +143,15 @@ export default function Feed() {
                         />
                         {isLiked && <span className="text-xs text-red-500 font-medium">1</span>}
                       </button>
-                      <button className="flex items-center gap-1.5 p-1.5 text-muted-foreground transition-colors" data-testid={`button-comment-${post.id}`}>
+                      <button className="p-2 rounded-md text-muted-foreground transition-colors" data-testid={`button-comment-${post.id}`}>
                         <MessageIcon className="h-[18px] w-[18px]" strokeWidth={1.5} />
                       </button>
-                      <button className="flex items-center gap-1.5 p-1.5 text-muted-foreground transition-colors" data-testid={`button-share-${post.id}`}>
+                      <button className="p-2 rounded-md text-muted-foreground transition-colors" data-testid={`button-share-${post.id}`}>
                         <Send className="h-4 w-4" strokeWidth={1.5} />
                       </button>
                     </div>
                     <button
-                      className="p-1.5 transition-colors"
+                      className="p-2 rounded-md transition-colors"
                       onClick={() => toggleSave(post.id)}
                       data-testid={`button-save-${post.id}`}
                     >
@@ -180,9 +172,11 @@ export default function Feed() {
       </div>
 
       {posts?.length === 0 && (
-        <div className="text-center py-20 px-6">
-          <Compass className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-medium">Nothing nearby yet</p>
+        <div className="text-center py-24 px-6">
+          <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center mx-auto mb-4">
+            <Compass className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-semibold">Nothing nearby yet</p>
           <p className="text-xs text-muted-foreground mt-1">Be the first to share what's happening around you</p>
         </div>
       )}
