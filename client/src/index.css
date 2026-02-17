@@ -175,6 +175,11 @@
   animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 
+/* Dark overlay on satellite map for modern look */
+.leaflet-tile-pane {
+  filter: brightness(0.7) contrast(1.1) saturate(0.8);
+}
+
 /* Hide leaflet controls */
 .leaflet-control-zoom {
   display: none !important;
