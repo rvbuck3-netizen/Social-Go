@@ -41,6 +41,28 @@ export const api = {
         }),
       },
     },
+    byUsername: {
+      method: 'GET' as const,
+      path: '/api/users/:username' as const,
+      responses: {
+        200: z.object({
+          id: z.number(),
+          username: z.string(),
+          bio: z.string().nullable(),
+          avatar: z.string().nullable(),
+          instagram: z.string().nullable(),
+          twitter: z.string().nullable(),
+          tiktok: z.string().nullable(),
+          snapchat: z.string().nullable(),
+          linkedin: z.string().nullable(),
+          facebook: z.string().nullable(),
+          website: z.string().nullable(),
+          isGoMode: z.boolean(),
+          isBoosted: z.boolean(),
+        }),
+        404: z.object({ message: z.string() }),
+      },
+    },
     updateStatus: {
       method: 'PATCH' as const,
       path: '/api/users/status' as const,

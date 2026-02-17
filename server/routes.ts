@@ -121,5 +121,27 @@ export async function registerRoutes(
     }
   });
 
+  app.get('/api/users/:username', async (req, res) => {
+    const user = await storage.getUserByUsername(req.params.username);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({
+      id: user.id,
+      username: user.username,
+      bio: user.bio,
+      avatar: user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`,
+      instagram: user.instagram,
+      twitter: user.twitter,
+      tiktok: user.tiktok,
+      snapchat: user.snapchat,
+      linkedin: user.linkedin,
+      facebook: user.facebook,
+      website: user.website,
+      isGoMode: user.isGoMode,
+      isBoosted: user.isBoosted,
+    });
+  });
+
   return httpServer;
 }

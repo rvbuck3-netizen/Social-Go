@@ -1,5 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { api } from "@shared/routes";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { MapPin, User, Heart, MessageCircle as MessageIcon, Send } from "lucide-react";
 
 export default function Feed() {
+  const [, setLocation] = useLocation();
   const { data: posts, isLoading } = useQuery<any[]>({
     queryKey: [api.posts.list.path],
   });
@@ -43,13 +45,15 @@ export default function Feed() {
         {posts?.map((post) => (
           <div key={post.id} className="px-4 py-3" data-testid={`post-item-${post.id}`}>
             <div className="flex gap-3">
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
-                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-              </Avatar>
+              <button onClick={() => setLocation(`/user/${post.authorName}`)} className="shrink-0" data-testid={`button-avatar-${post.id}`}>
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
+                  <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                </Avatar>
+              </button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-sm" data-testid={`text-author-${post.id}`}>{post.authorName}</span>
+                  <button onClick={() => setLocation(`/user/${post.authorName}`)} className="font-semibold text-sm text-left" data-testid={`text-author-${post.id}`}>{post.authorName}</button>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     Nearby

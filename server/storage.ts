@@ -21,6 +21,7 @@ function fuzzLocation(lat: number, lng: number): { latitude: number; longitude: 
 
 export interface IStorage {
   getUser(id: number): Promise<typeof users.$inferSelect | undefined>;
+  getUserByUsername(username: string): Promise<typeof users.$inferSelect | undefined>;
   getPosts(): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
   updateUserStatus(id: number, status: { 
@@ -57,6 +58,11 @@ export class DatabaseStorage implements IStorage {
         return { ...user, isBoosted: false, boostExpiresAt: null };
       }
     }
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<typeof users.$inferSelect | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
 

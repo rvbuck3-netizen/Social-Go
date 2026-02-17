@@ -9,6 +9,7 @@ import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
+import UserProfile from "@/pages/UserProfile";
 import AppSettings from "@/pages/AppSettings";
 import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ function Router() {
         <Switch>
           <Route path="/" component={SocialMap} />
           <Route path="/feed" component={Feed} />
+          <Route path="/user/:username" component={UserProfile} />
           <Route path="/shop" component={Shop} />
           <Route path="/profile" component={Profile} />
           <Route path="/settings" component={AppSettings} />
