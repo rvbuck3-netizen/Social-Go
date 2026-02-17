@@ -25,10 +25,10 @@ export default function Landing() {
             Safety is our #1 priority
           </div>
           <h1 className="text-3xl font-bold tracking-tight leading-tight mb-3" data-testid="text-hero-title">
-            Meet people nearby,<br />without the awkwardness
+            Meet people nearby —<br />without the pressure.
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-sm mx-auto">
-            Social Go helps you connect with people around you when you're too shy to say hi. Toggle Go Mode, share updates, and discover who's nearby.
+            Social Go empowers you to connect confidently with people around you and across the world. Activate Go Mode, share live updates, and instantly discover who's nearby and ready to engage. Build meaningful connections in real time — whether you're stepping out of your comfort zone or expanding your global network.
           </p>
           <a href="/api/login" data-testid="button-login-hero">
             <Button size="lg" className="w-full max-w-xs text-base">
