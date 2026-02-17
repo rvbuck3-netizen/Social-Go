@@ -180,11 +180,11 @@
   filter: brightness(0.7) contrast(1.1) saturate(0.8);
 }
 
-/* Make location labels clear and readable against satellite imagery */
+/* Map labels: only major features visible — cities, parks, shopping centers, main streets */
 .leaflet-tile-pane .labels-layer {
-  filter: brightness(2) contrast(2.5) saturate(0);
+  filter: brightness(3) contrast(4) saturate(0);
   mix-blend-mode: screen;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* Hide leaflet controls */
