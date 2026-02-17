@@ -15,6 +15,8 @@ import { insertPostSchema } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 // Fix Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
