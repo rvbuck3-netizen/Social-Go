@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart } from "lucide-react";
+import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BillingPeriod = "weekly" | "monthly" | "6month";
@@ -65,7 +65,7 @@ const boostProducts = [
     id: "boost-1",
     name: "1 Boost",
     description: "30 min of extra visibility",
-    price: "$4.99",
+    price: "$2.49",
     icon: Zap,
     color: "text-yellow-500",
   },
@@ -73,8 +73,8 @@ const boostProducts = [
     id: "boost-5",
     name: "5 Boosts",
     description: "Best for a big night out",
-    price: "$14.99",
-    priceEach: "$3.00 each",
+    price: "$7.49",
+    priceEach: "$1.50 each",
     icon: Flame,
     color: "text-orange-500",
     popular: true,
@@ -83,30 +83,75 @@ const boostProducts = [
     id: "boost-10",
     name: "10 Boosts",
     description: "For the whole week",
-    price: "$24.99",
-    priceEach: "$2.50 each",
+    price: "$12.49",
+    priceEach: "$1.25 each",
     icon: Crown,
     color: "text-purple-500",
   },
 ];
 
 const rosePacks = [
-  { id: "rose-1", amount: 1, price: "$3.99" },
-  { id: "rose-3", amount: 3, price: "$9.99", priceEach: "$3.33 each" },
-  { id: "rose-5", amount: 5, price: "$14.99", priceEach: "$3.00 each", popular: true },
-  { id: "rose-15", amount: 15, price: "$34.99", priceEach: "$2.33 each" },
+  { id: "rose-1", amount: 1, price: "$1.99" },
+  { id: "rose-3", amount: 3, price: "$4.99", priceEach: "$1.66 each" },
+  { id: "rose-5", amount: 5, price: "$7.49", priceEach: "$1.50 each", popular: true },
+  { id: "rose-15", amount: 15, price: "$17.49", priceEach: "$1.17 each" },
 ];
 
 const tokenPacks = [
-  { id: "tokens-50", amount: 50, price: "$4.99" },
-  { id: "tokens-150", amount: 150, price: "$11.99", priceEach: "$0.08 each", bonus: "+25 free" },
-  { id: "tokens-500", amount: 500, price: "$29.99", priceEach: "$0.06 each", bonus: "+100 free", popular: true },
-  { id: "tokens-1200", amount: 1200, price: "$59.99", priceEach: "$0.05 each", bonus: "+300 free" },
+  { id: "tokens-50", amount: 50, price: "$2.49" },
+  { id: "tokens-150", amount: 150, price: "$5.99", priceEach: "$0.04 each", bonus: "+25 free" },
+  { id: "tokens-500", amount: 500, price: "$14.99", priceEach: "$0.03 each", bonus: "+100 free", popular: true },
+  { id: "tokens-1200", amount: 1200, price: "$29.99", priceEach: "$0.025 each", bonus: "+300 free" },
 ];
+
+function SectionDropdown({
+  title,
+  description,
+  icon: Icon,
+  iconColor,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  title: string;
+  description: string;
+  icon: any;
+  iconColor: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t pt-4">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 text-left"
+        data-testid={`button-toggle-${title.toLowerCase().replace(/\s/g, '-')}`}
+      >
+        <Icon className={cn("h-5 w-5 shrink-0", iconColor)} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="mt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Shop() {
   const { toast } = useToast();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const { data: user, isLoading } = useQuery<any>({
     queryKey: [api.users.me.path],
@@ -141,6 +186,10 @@ export default function Shop() {
     });
   };
 
+  const toggleSection = (section: string) => {
+    setOpenSection(prev => prev === section ? null : section);
+  };
+
   if (isLoading) return (
     <div className="h-full flex items-center justify-center">
       <div className="h-6 w-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
@@ -159,7 +208,7 @@ export default function Shop() {
         <h1 className="text-base font-semibold" data-testid="text-shop-title">Shop</h1>
       </div>
 
-      <div className="px-4 pt-4 space-y-6">
+      <div className="px-4 pt-4 space-y-2">
 
         {user?.isBoosted && user?.boostExpiresAt && (
           <div className="flex items-center gap-3 py-2">
@@ -173,9 +222,15 @@ export default function Shop() {
           </div>
         )}
 
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Boosts</p>
-          <p className="text-xs text-muted-foreground mb-3">Temporarily increase your visibility on the map. Your profile appears larger and highlighted so nearby people notice you first. Great for busy areas or events.</p>
+        <SectionDropdown
+          title="Boosts"
+          description="Stand out on the map temporarily"
+          icon={Zap}
+          iconColor="text-yellow-500"
+          isOpen={openSection === "boosts"}
+          onToggle={() => toggleSection("boosts")}
+        >
+          <p className="text-xs text-muted-foreground mb-3">Temporarily increase your visibility on the map. Your profile appears larger and highlighted so nearby people notice you first.</p>
           <div className="space-y-1">
             {boostProducts.map((product) => (
               <div key={product.id} className="flex items-center gap-3 py-3">
@@ -206,11 +261,17 @@ export default function Shop() {
               </div>
             ))}
           </div>
-        </div>
+        </SectionDropdown>
 
-        <div className="border-t pt-5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Social Go Tokens</p>
-          <p className="text-xs text-muted-foreground mb-3">Your in-app currency. Use tokens to unlock premium actions like extending Go Mode, sending gifts, and tipping profiles you like. Tokens stay in your account until you spend them.</p>
+        <SectionDropdown
+          title="Social Go Tokens"
+          description="In-app currency for premium actions"
+          icon={Coins}
+          iconColor="text-yellow-500"
+          isOpen={openSection === "tokens"}
+          onToggle={() => toggleSection("tokens")}
+        >
+          <p className="text-xs text-muted-foreground mb-3">Use tokens to unlock premium actions like extending Go Mode, sending gifts, and tipping profiles you like. Tokens never expire.</p>
           <div className="space-y-1">
             {tokenPacks.map((pack) => (
               <div key={pack.id} className="flex items-center gap-3 py-3">
@@ -242,11 +303,17 @@ export default function Shop() {
               </div>
             ))}
           </div>
-        </div>
+        </SectionDropdown>
 
-        <div className="border-t pt-5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Roses</p>
-          <p className="text-xs text-muted-foreground mb-3">Send a Rose to someone special. Roses go to the top of their inbox so they see you before anyone else — a standout way to show real interest.</p>
+        <SectionDropdown
+          title="Roses"
+          description="Show serious interest"
+          icon={Sparkles}
+          iconColor="text-rose-500"
+          isOpen={openSection === "roses"}
+          onToggle={() => toggleSection("roses")}
+        >
+          <p className="text-xs text-muted-foreground mb-3">Send a Rose to someone special. Roses go to the top of their inbox so they see you before anyone else.</p>
           <div className="space-y-1">
             {rosePacks.map((pack) => (
               <div key={pack.id} className="flex items-center gap-3 py-3">
@@ -275,11 +342,17 @@ export default function Shop() {
               </div>
             ))}
           </div>
-        </div>
+        </SectionDropdown>
 
-        <div className="border-t pt-5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Subscriptions</p>
-          <p className="text-xs text-muted-foreground mb-3">Unlock everything. Get unlimited likes, see who's interested, and stand out with priority placement.</p>
+        <SectionDropdown
+          title="Subscriptions"
+          description="Unlock everything"
+          icon={Crown}
+          iconColor="text-purple-500"
+          isOpen={openSection === "subscriptions"}
+          onToggle={() => toggleSection("subscriptions")}
+        >
+          <p className="text-xs text-muted-foreground mb-3">Get unlimited likes, see who's interested, and stand out with priority placement.</p>
 
           <div className="flex items-center gap-1 p-0.5 bg-muted rounded-md mb-4 w-fit">
             {(Object.keys(billingLabels) as BillingPeriod[]).map((period) => (
@@ -352,22 +425,22 @@ export default function Shop() {
               );
             })}
           </div>
-        </div>
+        </SectionDropdown>
 
         <div className="border-t pt-5 pb-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">How it works</p>
           <div className="space-y-2">
             <div className="flex items-start gap-2">
               <Zap className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Boosts</span> make your profile stand out on the map for a limited time. Think of it as a spotlight — temporary but powerful.</p>
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Boosts</span> make your profile stand out on the map for a limited time.</p>
             </div>
             <div className="flex items-start gap-2">
               <Coins className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Tokens</span> are your wallet. Spend them on premium actions like extending Go Mode, sending gifts, or tipping. They never expire.</p>
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Tokens</span> are your wallet. Spend them on premium actions. They never expire.</p>
             </div>
             <div className="flex items-start gap-2">
               <Sparkles className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Roses</span> show serious interest. When you send one, your profile jumps to the top of someone's list. Use them wisely.</p>
+              <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Roses</span> show serious interest. Your profile jumps to the top of their list.</p>
             </div>
           </div>
         </div>
