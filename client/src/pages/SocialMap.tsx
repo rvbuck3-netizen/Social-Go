@@ -215,7 +215,7 @@ export default function SocialMap() {
           url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
           className="labels-layer"
           subdomains="abcd"
-          maxNativeZoom={13}
+          maxNativeZoom={15}
           maxZoom={20}
         />
         <ZoomLabelScaler />
