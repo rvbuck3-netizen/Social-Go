@@ -280,9 +280,12 @@ export async function registerRoutes(
 
   app.get('/api/stripe/publishable-key', async (_req, res) => {
     try {
-      const { getStripePublishableKey } = await import("./stripeClient");
-      const key = await getStripePublishableKey();
-      res.json({ publishableKey: key });
+      const { getStripeCredentials } = await import("./stripeClient");
+      const creds = await getStripeCredentials();
+      if (!creds) {
+        return res.status(503).json({ error: 'Stripe is not configured' });
+      }
+      res.json({ publishableKey: creds.publishableKey });
     } catch (error) {
       res.status(500).json({ error: 'Failed to get Stripe key' });
     }
@@ -351,7 +354,11 @@ export async function registerRoutes(
         return res.status(400).json({ error: 'priceId is required' });
       }
 
-      const { getUncachableStripeClient } = await import("./stripeClient");
+      const { getStripeCredentials, getUncachableStripeClient } = await import("./stripeClient");
+      const creds = await getStripeCredentials();
+      if (!creds) {
+        return res.status(503).json({ error: 'Stripe is not configured' });
+      }
       const stripe = await getUncachableStripeClient();
       const profile = await storage.getProfile(userId);
       if (!profile) {
@@ -399,7 +406,11 @@ export async function registerRoutes(
         return res.status(400).json({ error: 'No billing account found' });
       }
 
-      const { getUncachableStripeClient } = await import("./stripeClient");
+      const { getStripeCredentials, getUncachableStripeClient } = await import("./stripeClient");
+      const creds = await getStripeCredentials();
+      if (!creds) {
+        return res.status(503).json({ error: 'Stripe is not configured' });
+      }
       const stripe = await getUncachableStripeClient();
       const baseUrl = `${req.protocol}://${req.get('host')}`;
 

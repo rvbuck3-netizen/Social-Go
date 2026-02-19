@@ -3,6 +3,16 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
+process.on('unhandledRejection', (reason: any, promise) => {
+  const message = reason?.message || String(reason);
+  if (message.includes('Stripe') || message.includes('stripe') || message.includes('connection not found')) {
+    console.error('Stripe-related unhandled rejection (non-fatal):', message);
+  } else {
+    console.error('Unhandled Rejection:', reason);
+    throw reason;
+  }
+});
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -12,48 +22,61 @@ declare module "http" {
   }
 }
 
-async function initStripe() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    console.warn('DATABASE_URL not set, skipping Stripe initialization.');
-    return;
-  }
+function initStripeBackground() {
+  setTimeout(async () => {
+    try {
+      const databaseUrl = process.env.DATABASE_URL;
+      if (!databaseUrl) {
+        console.warn('DATABASE_URL not set, skipping Stripe initialization.');
+        return;
+      }
 
-  const hasConnectorHostname = !!process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const hasIdentityToken = !!(process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL);
-  if (!hasConnectorHostname || !hasIdentityToken) {
-    console.warn('Stripe connector credentials not available, skipping Stripe initialization.');
-    return;
-  }
+      let credentials: { publishableKey: string; secretKey: string } | null = null;
+      try {
+        const { getStripeCredentials } = await import('./stripeClient');
+        credentials = await getStripeCredentials();
+      } catch {
+        console.warn('Stripe credentials not available, skipping Stripe initialization.');
+        return;
+      }
 
-  try {
-    console.log('Initializing Stripe schema...');
-    const { runMigrations } = await import('stripe-replit-sync');
-    await runMigrations({ databaseUrl });
-    console.log('Stripe schema ready');
-  } catch (error) {
-    console.error('Stripe schema migration failed (non-fatal):', error);
-    return;
-  }
+      if (!credentials) {
+        console.warn('Stripe credentials not configured, skipping Stripe initialization.');
+        return;
+      }
 
-  try {
-    const { getStripeSync } = await import('./stripeClient');
-    const stripeSync = await getStripeSync();
+      try {
+        console.log('Initializing Stripe schema...');
+        const { runMigrations } = await import('stripe-replit-sync');
+        await runMigrations({ databaseUrl });
+        console.log('Stripe schema ready');
+      } catch (error) {
+        console.error('Stripe schema migration failed (non-fatal):', error);
+        return;
+      }
 
-    console.log('Setting up managed webhook...');
-    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
-    const webhookResult = await stripeSync.findOrCreateManagedWebhook(
-      `${webhookBaseUrl}/api/stripe/webhook`
-    );
-    console.log('Webhook configured:', JSON.stringify(webhookResult?.webhook?.url || webhookResult?.url || 'done'));
+      try {
+        const { getStripeSync } = await import('./stripeClient');
+        const stripeSync = await getStripeSync();
 
-    console.log('Syncing Stripe data...');
-    stripeSync.syncBackfill()
-      .then(() => console.log('Stripe data synced'))
-      .catch((err: any) => console.error('Error syncing Stripe data:', err));
-  } catch (error) {
-    console.error('Stripe sync setup failed (non-fatal, server will continue):', error);
-  }
+        console.log('Setting up managed webhook...');
+        const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+        const webhookResult = await stripeSync.findOrCreateManagedWebhook(
+          `${webhookBaseUrl}/api/stripe/webhook`
+        );
+        console.log('Webhook configured:', JSON.stringify(webhookResult?.webhook?.url || webhookResult?.url || 'done'));
+
+        console.log('Syncing Stripe data...');
+        stripeSync.syncBackfill()
+          .then(() => console.log('Stripe data synced'))
+          .catch((err: any) => console.error('Error syncing Stripe data:', err));
+      } catch (error) {
+        console.error('Stripe sync setup failed (non-fatal):', error);
+      }
+    } catch (error) {
+      console.error('Stripe init failed entirely (non-fatal):', error);
+    }
+  }, 100);
 }
 
 app.post(
@@ -169,9 +192,7 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
-      initStripe().catch((err) =>
-        console.error("Stripe init failed (non-fatal):", err)
-      );
+      initStripeBackground();
     },
   );
 })();

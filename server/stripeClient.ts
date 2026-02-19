@@ -48,6 +48,14 @@ async function getCredentials() {
   };
 }
 
+export async function getStripeCredentials(): Promise<{ publishableKey: string; secretKey: string } | null> {
+  try {
+    return await getCredentials();
+  } catch {
+    return null;
+  }
+}
+
 export async function getUncachableStripeClient() {
   const { secretKey } = await getCredentials();
   return new Stripe(secretKey, {
