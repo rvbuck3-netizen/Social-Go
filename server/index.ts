@@ -2,9 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import { runMigrations } from 'stripe-replit-sync';
-import { getStripeSync } from './stripeClient';
-import { WebhookHandlers } from './webhookHandlers';
 
 const app = express();
 const httpServer = createServer(app);
@@ -18,14 +15,17 @@ declare module "http" {
 async function initStripe() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable is required for Stripe integration.');
+    console.warn('DATABASE_URL not set, skipping Stripe initialization.');
+    return;
   }
 
   try {
     console.log('Initializing Stripe schema...');
+    const { runMigrations } = await import('stripe-replit-sync');
     await runMigrations({ databaseUrl });
     console.log('Stripe schema ready');
 
+    const { getStripeSync } = await import('./stripeClient');
     const stripeSync = await getStripeSync();
 
     console.log('Setting up managed webhook...');
@@ -61,6 +61,7 @@ app.post(
         return res.status(500).json({ error: 'Webhook processing error' });
       }
 
+      const { WebhookHandlers } = await import('./webhookHandlers');
       await WebhookHandlers.processWebhook(req.body as Buffer, sig);
       res.status(200).json({ received: true });
     } catch (error: any) {
