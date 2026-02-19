@@ -6,7 +6,6 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { seedDatabase } from "./seed";
-import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 import { db } from "./db";
 import { profiles } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
@@ -281,6 +280,7 @@ export async function registerRoutes(
 
   app.get('/api/stripe/publishable-key', async (_req, res) => {
     try {
+      const { getStripePublishableKey } = await import("./stripeClient");
       const key = await getStripePublishableKey();
       res.json({ publishableKey: key });
     } catch (error) {
@@ -346,6 +346,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: 'priceId is required' });
       }
 
+      const { getUncachableStripeClient } = await import("./stripeClient");
       const stripe = await getUncachableStripeClient();
       const profile = await storage.getProfile(userId);
       if (!profile) {
@@ -393,6 +394,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: 'No billing account found' });
       }
 
+      const { getUncachableStripeClient } = await import("./stripeClient");
       const stripe = await getUncachableStripeClient();
       const baseUrl = `${req.protocol}://${req.get('host')}`;
 
