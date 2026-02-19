@@ -40,8 +40,7 @@ async function initStripe() {
       .then(() => console.log('Stripe data synced'))
       .catch((err: any) => console.error('Error syncing Stripe data:', err));
   } catch (error) {
-    console.error('Failed to initialize Stripe:', error);
-    throw error;
+    console.error('Failed to initialize Stripe (non-fatal, server will continue):', error);
   }
 }
 
@@ -119,7 +118,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await initStripe();
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
@@ -158,6 +156,9 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+      initStripe().catch((err) =>
+        console.error("Stripe init failed (non-fatal):", err)
+      );
     },
   );
 })();
