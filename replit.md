@@ -39,6 +39,14 @@ Public schema tables:
 
 Profile fields include: `is_founding_member` (boolean, marks pre-launch users), `age_verified` (boolean, 18+ confirmation gate), `is_boosted` (boolean, paid visibility boost), `boost_expires_at` (timestamp), `coins` (integer), `stripe_customer_id`, `stripe_subscription_id`, `subscription_tier`.
 
+Gamification fields on profiles: `xp` (integer), `level` (integer 1-10), `streak` (integer), `lastDailyLoginAt` (timestamp), `referralCode` (varchar), `onboardingCompleted` (boolean), `interests` (text array), `locationRadius` (integer).
+4. **badges** - `id` serial PK, `code` (unique), `name`, `description`, `icon`, `category`, `xpReward`
+5. **userBadges** - `id` serial PK, `userId` FK, `badgeCode` FK, `unlockedAt`
+6. **challenges** - `id` serial PK, `title`, `description`, `icon`, `targetType`, `targetCount`, `rewardXp`, `rewardBadgeCode`, `startAt`, `endAt`, `isActive`
+7. **challengeProgress** - `id` serial PK, `userId` FK, `challengeId` FK, `progress`, `completed`, `completedAt`
+8. **referrals** - `id` serial PK, `referrerUserId`, `referredUserId`, `referralCode`, `completedAt`
+9. **xpEvents** - `id` serial PK, `userId`, `amount`, `source`, `sourceId`, `createdAt`
+
 Stripe schema (managed by `stripe-replit-sync`, DO NOT manually create or modify):
 - `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`, etc.
 - Synced automatically via webhooks and `syncBackfill()` on startup.
@@ -62,6 +70,22 @@ All API routes require authentication (except `/api/auth/*` and `/api/logout`).
 - `POST /api/stripe/portal` - Create Stripe Customer Portal session for billing management
 - `GET /api/stripe/subscription` - Get current user's active subscription info
 - `POST /api/verify-age` - Confirm age verification (18+) for new users
+- `GET /api/gamification/me` - Returns current user's XP, level, streak, badges
+- `GET /api/badges` - List all available badges
+- `GET /api/challenges` - List active challenges with user progress
+- `POST /api/challenges/join` - Join a challenge (requires challengeId)
+- `GET /api/leaderboard` - Top 20 users by XP
+- `POST /api/onboarding/complete` - Complete onboarding flow (interests, locationRadius, referralCode)
+- `GET /api/referral/code` - Get or generate user's referral code
+
+### Gamification System
+- **XP/Levels**: 10-level system (100→9000 XP thresholds). XP awarded for posts (15), daily login streaks (10-50), badge unlocks, challenge completions.
+- **Streaks**: Daily login tracking with escalating XP rewards (10 + streak*5, max 50). Resets if day missed.
+- **Badges**: 12 seeded badges across categories (membership, engagement, streak, exploration, social, achievement). Stored in `badges` table, user unlocks in `userBadges`.
+- **Challenges**: Time-limited goals (e.g., "Post 3 times this week"). Auto-progress on post creation. Rewards XP and optional badge.
+- **Referrals**: Format SG-XXXX-YYYY. One-time use per code. Awards 100 XP to referrer.
+- **Onboarding**: 4-step flow after age verification: interest selection (12 options), location radius (5-50mi), referral code entry, first task prompt. Awards 25 XP.
+- **Map Time Filter**: Posts filterable by All/1h/24h/7d on the map view.
 
 ### Key Design Decisions
 - **Shared route contracts**: The `shared/routes.ts` file defines API paths, methods, input schemas, and response schemas in one place. Both client hooks and server handlers reference these, ensuring consistency.

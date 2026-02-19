@@ -12,7 +12,8 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   User, Instagram, Twitter, Globe, ChevronDown,
-  Palette, Sparkles, Camera, Circle, Heart, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane, Star
+  Palette, Sparkles, Camera, Circle, Heart, Music, Coffee, Gamepad2, BookOpen, Dumbbell, Plane, Star,
+  Zap, Flame, Trophy, Share2, Copy, Check
 } from "lucide-react";
 import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 import { useForm } from "react-hook-form";
@@ -77,8 +78,18 @@ export default function Profile() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
+  const [copiedReferral, setCopiedReferral] = useState(false);
+
   const { data: user, isLoading } = useQuery<any>({
     queryKey: [api.users.me.path],
+  });
+
+  const { data: gamification } = useQuery<any>({
+    queryKey: ['/api/gamification/me'],
+  });
+
+  const { data: referralData } = useQuery<any>({
+    queryKey: ['/api/referral/code'],
   });
 
   const form = useForm({
@@ -224,6 +235,76 @@ export default function Profile() {
             <p className="text-[11px] text-muted-foreground mt-0.5">Coins</p>
           </Card>
         </div>
+
+        {gamification && (
+          <Card className="mt-4 p-4">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-md bg-amber-500/10 flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" data-testid="text-level">Level {gamification.level}</p>
+                  <p className="text-[11px] text-muted-foreground">{gamification.xp} XP</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Flame className={cn("h-4 w-4", gamification.streakCount > 0 ? "text-orange-500" : "text-muted-foreground")} />
+                <span className="text-sm font-semibold" data-testid="text-streak">{gamification.streakCount}</span>
+              </div>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${gamification.progressPercent}%` }}
+                data-testid="xp-progress-bar"
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {gamification.nextLevelXp === Infinity ? "Max level reached" : `${gamification.nextLevelXp - gamification.xp} XP to Level ${gamification.level + 1}`}
+            </p>
+
+            {gamification.badges && gamification.badges.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/60">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Badges</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {gamification.badges.map((badge: any) => (
+                    <Badge key={badge.id} variant="secondary" className="text-[10px] gap-1" data-testid={`badge-${badge.code}`}>
+                      <Trophy className="h-2.5 w-2.5" />
+                      {badge.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {referralData?.code && (
+          <Card className="mt-3 p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Share2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium">Your referral code</p>
+                  <p className="text-[11px] text-muted-foreground font-mono truncate" data-testid="text-referral-code">{referralData.code}</p>
+                </div>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  navigator.clipboard.writeText(referralData.code);
+                  setCopiedReferral(true);
+                  setTimeout(() => setCopiedReferral(false), 2000);
+                }}
+                data-testid="button-copy-referral"
+              >
+                {copiedReferral ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {hasSocials && (
           <div className="flex items-center gap-2 mt-4 flex-wrap">

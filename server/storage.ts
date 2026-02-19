@@ -5,10 +5,22 @@ import {
   posts,
   blockedUsers,
   reports,
+  badges,
+  userBadges,
+  challenges,
+  challengeProgress,
+  referrals,
+  xpEvents,
   type Post,
   type Profile,
+  type Badge,
+  type UserBadge,
+  type Challenge,
+  type ChallengeProgress,
+  type Referral,
+  type XpEvent,
 } from "@shared/schema";
-import { eq, desc, and, isNotNull, ne, sql } from "drizzle-orm";
+import { eq, desc, and, isNotNull, ne, sql, gte, lte } from "drizzle-orm";
 
 const GO_MODE_DURATION_HOURS = 2;
 const LOCATION_FUZZ_AMOUNT = 0.003;
@@ -45,6 +57,20 @@ export interface IStorage {
   unblockUser(blockerUserId: string, blockedUserId: string): Promise<void>;
   getBlockedUserIds(userId: string): Promise<string[]>;
   reportUser(reporterUserId: string, reportedUserId: string, reason: string, details?: string): Promise<void>;
+  awardXp(userId: string, type: string, amount: number, description?: string): Promise<Profile>;
+  getBadges(): Promise<Badge[]>;
+  getUserBadges(userId: string): Promise<(UserBadge & { badge: Badge })[]>;
+  awardBadge(userId: string, badgeCode: string): Promise<void>;
+  getActiveChallenges(): Promise<Challenge[]>;
+  joinChallenge(userId: string, challengeId: number): Promise<ChallengeProgress>;
+  getUserChallengeProgress(userId: string): Promise<(ChallengeProgress & { challenge: Challenge })[]>;
+  incrementChallengeProgress(userId: string, targetType: string): Promise<void>;
+  getXpEvents(userId: string, limit?: number): Promise<XpEvent[]>;
+  getReferralByCode(code: string): Promise<Referral | undefined>;
+  createReferral(referrerUserId: string, code: string): Promise<Referral>;
+  redeemReferral(code: string, refereeUserId: string): Promise<void>;
+  checkAndAwardLoginStreak(userId: string): Promise<{ streakCount: number; xpAwarded: number }>;
+  getLeaderboard(limit?: number): Promise<Pick<Profile, 'username' | 'xp' | 'level' | 'avatar' | 'isFoundingMember'>[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -200,6 +226,198 @@ export class DatabaseStorage implements IStorage {
 
   async reportUser(reporterUserId: string, reportedUserId: string, reason: string, details?: string): Promise<void> {
     await db.insert(reports).values({ reporterUserId, reportedUserId, reason, details });
+  }
+
+  private calculateLevel(xp: number): number {
+    if (xp < 100) return 1;
+    if (xp < 300) return 2;
+    if (xp < 600) return 3;
+    if (xp < 1000) return 4;
+    if (xp < 1500) return 5;
+    if (xp < 2500) return 6;
+    if (xp < 4000) return 7;
+    if (xp < 6000) return 8;
+    if (xp < 9000) return 9;
+    return 10;
+  }
+
+  async awardXp(userId: string, type: string, amount: number, description?: string): Promise<Profile> {
+    await db.insert(xpEvents).values({ userId, type, amount, description });
+    const [profile] = await db.update(profiles)
+      .set({ xp: sql`${profiles.xp} + ${amount}` })
+      .where(eq(profiles.userId, userId))
+      .returning();
+    const newLevel = this.calculateLevel(profile.xp);
+    if (newLevel !== profile.level) {
+      await db.update(profiles).set({ level: newLevel }).where(eq(profiles.userId, userId));
+      profile.level = newLevel;
+    }
+    return profile;
+  }
+
+  async getBadges(): Promise<Badge[]> {
+    return await db.select().from(badges);
+  }
+
+  async getUserBadges(userId: string): Promise<(UserBadge & { badge: Badge })[]> {
+    const results = await db.select()
+      .from(userBadges)
+      .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+      .where(eq(userBadges.userId, userId));
+    return results.map(r => ({ ...r.user_badges, badge: r.badges }));
+  }
+
+  async awardBadge(userId: string, badgeCode: string): Promise<void> {
+    const [badge] = await db.select().from(badges).where(eq(badges.code, badgeCode));
+    if (!badge) return;
+    const existing = await db.select().from(userBadges)
+      .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badge.id)));
+    if (existing.length > 0) return;
+    await db.insert(userBadges).values({ userId, badgeId: badge.id });
+    if (badge.xpReward > 0) {
+      await this.awardXp(userId, 'badge', badge.xpReward, `Earned badge: ${badge.name}`);
+    }
+  }
+
+  async getActiveChallenges(): Promise<Challenge[]> {
+    const now = new Date();
+    return await db.select().from(challenges)
+      .where(and(
+        eq(challenges.isActive, true),
+        lte(challenges.startAt, now),
+        gte(challenges.endAt, now)
+      ));
+  }
+
+  async joinChallenge(userId: string, challengeId: number): Promise<ChallengeProgress> {
+    const existing = await db.select().from(challengeProgress)
+      .where(and(eq(challengeProgress.userId, userId), eq(challengeProgress.challengeId, challengeId)));
+    if (existing.length > 0) return existing[0];
+    const [progress] = await db.insert(challengeProgress)
+      .values({ userId, challengeId })
+      .returning();
+    return progress;
+  }
+
+  async getUserChallengeProgress(userId: string): Promise<(ChallengeProgress & { challenge: Challenge })[]> {
+    const results = await db.select()
+      .from(challengeProgress)
+      .innerJoin(challenges, eq(challengeProgress.challengeId, challenges.id))
+      .where(eq(challengeProgress.userId, userId));
+    return results.map(r => ({ ...r.challenge_progress, challenge: r.challenges }));
+  }
+
+  async incrementChallengeProgress(userId: string, targetType: string): Promise<void> {
+    const now = new Date();
+    const activeResults = await db.select()
+      .from(challengeProgress)
+      .innerJoin(challenges, eq(challengeProgress.challengeId, challenges.id))
+      .where(and(
+        eq(challengeProgress.userId, userId),
+        eq(challenges.targetType, targetType),
+        eq(challengeProgress.completed, false),
+        eq(challenges.isActive, true),
+        lte(challenges.startAt, now),
+        gte(challenges.endAt, now)
+      ));
+
+    for (const r of activeResults) {
+      const newProgress = r.challenge_progress.progress + 1;
+      const isComplete = newProgress >= r.challenges.targetCount;
+      await db.update(challengeProgress)
+        .set({
+          progress: newProgress,
+          completed: isComplete,
+          completedAt: isComplete ? now : null,
+        })
+        .where(eq(challengeProgress.id, r.challenge_progress.id));
+
+      if (isComplete) {
+        await this.awardXp(userId, 'challenge', r.challenges.rewardXp, `Completed challenge: ${r.challenges.title}`);
+        if (r.challenges.rewardBadgeCode) {
+          await this.awardBadge(userId, r.challenges.rewardBadgeCode);
+        }
+      }
+    }
+  }
+
+  async getXpEvents(userId: string, limit = 20): Promise<XpEvent[]> {
+    return await db.select().from(xpEvents)
+      .where(eq(xpEvents.userId, userId))
+      .orderBy(desc(xpEvents.createdAt))
+      .limit(limit);
+  }
+
+  async getReferralByCode(code: string): Promise<Referral | undefined> {
+    const [ref] = await db.select().from(referrals).where(eq(referrals.code, code));
+    return ref;
+  }
+
+  async createReferral(referrerUserId: string, code: string): Promise<Referral> {
+    const [ref] = await db.insert(referrals).values({ referrerUserId, code }).returning();
+    return ref;
+  }
+
+  async redeemReferral(code: string, refereeUserId: string): Promise<void> {
+    const [ref] = await db.select().from(referrals).where(eq(referrals.code, code));
+    if (!ref || ref.redeemed) return;
+    await db.update(referrals)
+      .set({ redeemed: true, refereeUserId, redeemedAt: new Date() })
+      .where(eq(referrals.id, ref.id));
+    await this.awardXp(ref.referrerUserId, 'referral', 100, 'Friend joined via your referral');
+    await this.awardXp(refereeUserId, 'referral', 50, 'Joined via referral link');
+  }
+
+  async checkAndAwardLoginStreak(userId: string): Promise<{ streakCount: number; xpAwarded: number }> {
+    const profile = await this.getProfile(userId);
+    if (!profile) return { streakCount: 0, xpAwarded: 0 };
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lastLogin = profile.lastDailyLoginAt;
+
+    if (lastLogin) {
+      const lastLoginDay = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
+      const diffDays = Math.floor((today.getTime() - lastLoginDay.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        return { streakCount: profile.streakCount, xpAwarded: 0 };
+      }
+
+      if (diffDays === 1) {
+        const newStreak = profile.streakCount + 1;
+        const xpAmount = Math.min(10 + newStreak * 5, 50);
+        await db.update(profiles)
+          .set({ streakCount: newStreak, lastDailyLoginAt: now })
+          .where(eq(profiles.userId, userId));
+        await this.awardXp(userId, 'daily_login', xpAmount, `Day ${newStreak} login streak`);
+
+        if (newStreak === 7) await this.awardBadge(userId, 'streak_7');
+        if (newStreak === 30) await this.awardBadge(userId, 'streak_30');
+
+        return { streakCount: newStreak, xpAwarded: xpAmount };
+      }
+    }
+
+    await db.update(profiles)
+      .set({ streakCount: 1, lastDailyLoginAt: now })
+      .where(eq(profiles.userId, userId));
+    await this.awardXp(userId, 'daily_login', 10, 'Daily login');
+    return { streakCount: 1, xpAwarded: 10 };
+  }
+
+  async getLeaderboard(limit = 10): Promise<Pick<Profile, 'username' | 'xp' | 'level' | 'avatar' | 'isFoundingMember'>[]> {
+    return await db.select({
+      username: profiles.username,
+      xp: profiles.xp,
+      level: profiles.level,
+      avatar: profiles.avatar,
+      isFoundingMember: profiles.isFoundingMember,
+    })
+      .from(profiles)
+      .where(ne(profiles.userId, ''))
+      .orderBy(desc(profiles.xp))
+      .limit(limit);
   }
 }
 

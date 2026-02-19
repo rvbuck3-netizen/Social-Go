@@ -16,6 +16,7 @@ import Shop from "@/pages/Shop";
 import UserProfile from "@/pages/UserProfile";
 import AppSettings from "@/pages/AppSettings";
 import AgeVerification from "@/components/AgeVerification";
+import Onboarding from "@/components/Onboarding";
 import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -94,6 +95,10 @@ function AgeGatedApp() {
 
   if (profile && !profile.ageVerified) {
     return <AgeVerification />;
+  }
+
+  if (profile && !profile.onboardingCompleted) {
+    return <Onboarding />;
   }
 
   return <AuthenticatedApp />;

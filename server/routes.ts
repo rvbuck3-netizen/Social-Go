@@ -31,9 +31,12 @@ export async function registerRoutes(
         .where(eq(profiles.userId, userId));
       profile = await storage.getProfile(userId);
     }
+    await storage.checkAndAwardLoginStreak(userId);
+    const updatedProfile = await storage.getProfile(userId);
+
     res.json({
-      ...profile,
-      avatar: profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.username}`
+      ...updatedProfile,
+      avatar: updatedProfile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${updatedProfile?.username}`
     });
   });
 
@@ -51,6 +54,106 @@ export async function registerRoutes(
     } catch (error) {
       res.status(500).json({ error: 'Failed to verify age' });
     }
+  });
+
+  // === Gamification Routes ===
+
+  app.get('/api/gamification/me', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getProfile(userId);
+      if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+      const userBadges = await storage.getUserBadges(userId);
+      const challengeProgress = await storage.getUserChallengeProgress(userId);
+      const recentXp = await storage.getXpEvents(userId, 10);
+
+      const xpForNextLevel = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 9000, Infinity];
+      const currentLevelXp = xpForNextLevel[profile.level - 1] || 0;
+      const nextLevelXp = xpForNextLevel[profile.level] || profile.xp;
+      const progressPercent = nextLevelXp === Infinity ? 100 :
+        Math.round(((profile.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100);
+
+      res.json({
+        xp: profile.xp,
+        level: profile.level,
+        streakCount: profile.streakCount,
+        nextLevelXp,
+        currentLevelXp,
+        progressPercent,
+        badges: userBadges.map(ub => ub.badge),
+        challenges: challengeProgress,
+        recentXp,
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to load gamification data' });
+    }
+  });
+
+  app.get('/api/badges', async (_req, res) => {
+    const allBadges = await storage.getBadges();
+    res.json(allBadges);
+  });
+
+  app.get('/api/challenges', async (_req, res) => {
+    const active = await storage.getActiveChallenges();
+    res.json(active);
+  });
+
+  app.post('/api/challenges/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { challengeId } = req.body;
+      if (!challengeId) return res.status(400).json({ error: 'challengeId required' });
+      const progress = await storage.joinChallenge(userId, challengeId);
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to join challenge' });
+    }
+  });
+
+  app.get('/api/leaderboard', async (_req, res) => {
+    const leaders = await storage.getLeaderboard(20);
+    res.json(leaders);
+  });
+
+  app.post('/api/onboarding/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { interests, locationRadius, referralCode: usedReferralCode } = req.body;
+
+      await db.update(profiles).set({
+        onboardingCompleted: true,
+        interests: interests || [],
+        locationRadius: locationRadius || 25,
+      }).where(eq(profiles.userId, userId));
+
+      const code = `SG-${userId.slice(0, 4).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      await db.update(profiles).set({ referralCode: code }).where(eq(profiles.userId, userId));
+
+      await storage.awardXp(userId, 'onboarding', 25, 'Completed onboarding');
+
+      if (usedReferralCode) {
+        try {
+          await storage.redeemReferral(usedReferralCode, userId);
+        } catch (e) {}
+      }
+
+      res.json({ success: true, referralCode: code });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to complete onboarding' });
+    }
+  });
+
+  app.get('/api/referral/code', isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const profile = await storage.getProfile(userId);
+    if (!profile?.referralCode) {
+      const code = `SG-${userId.slice(0, 4).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      await db.update(profiles).set({ referralCode: code }).where(eq(profiles.userId, userId));
+      return res.json({ code });
+    }
+    res.json({ code: profile.referralCode });
   });
 
   app.patch(api.users.updateStatus.path, isAuthenticated, async (req: any, res) => {
@@ -136,6 +239,8 @@ export async function registerRoutes(
         input.longitude = undefined;
       }
       const post = await storage.createPost(input, userId);
+      await storage.awardXp(userId, 'post', 15, 'Created a post');
+      await storage.incrementChallengeProgress(userId, 'post');
       res.status(201).json(post);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -168,6 +273,9 @@ export async function registerRoutes(
       website: profile.website,
       isGoMode: profile.isGoMode,
       isBoosted: profile.isBoosted,
+      isFoundingMember: profile.isFoundingMember,
+      xp: profile.xp,
+      level: profile.level,
     });
   });
 

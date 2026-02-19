@@ -6,7 +6,8 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, Ban, Flag, Locate, Compass } from "lucide-react";
+import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, Ban, Flag, Locate, Compass, Clock, Flame } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -77,6 +78,7 @@ function ZoomControls() {
 export default function SocialMap() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
+  const [timeFilter, setTimeFilter] = useState<'all' | 'hour' | 'today' | 'week'>('all');
   const { toast } = useToast();
 
   const { data: posts } = useQuery<any[]>({
@@ -262,7 +264,19 @@ export default function SocialMap() {
           </Popup>
         </Marker>
 
-        {posts?.filter((post) => post.latitude != null && post.longitude != null).map((post) => (
+        {posts?.filter((post) => {
+          if (post.latitude == null || post.longitude == null) return false;
+          if (timeFilter === 'all') return true;
+          if (!post.createdAt) return true;
+          const postDate = new Date(post.createdAt);
+          if (isNaN(postDate.getTime())) return true;
+          const now = new Date();
+          const diffMs = now.getTime() - postDate.getTime();
+          if (timeFilter === 'hour') return diffMs < 60 * 60 * 1000;
+          if (timeFilter === 'today') return diffMs < 24 * 60 * 60 * 1000;
+          if (timeFilter === 'week') return diffMs < 7 * 24 * 60 * 60 * 1000;
+          return true;
+        }).map((post) => (
           <Marker
             key={post.id}
             position={[post.latitude, post.longitude]}
@@ -388,6 +402,24 @@ export default function SocialMap() {
           <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-emerald-500 animate-pulse" : "bg-red-500")} />
           <Compass className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs font-semibold tracking-wide font-display">Social Go</span>
+        </div>
+      </div>
+
+      <div className="absolute top-16 left-4 z-[1000]">
+        <div className="glass rounded-md shadow-md flex items-center gap-0.5 p-1">
+          {([['all', 'All'], ['hour', '1h'], ['today', '24h'], ['week', '7d']] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTimeFilter(key)}
+              className={cn(
+                "px-2.5 py-1.5 rounded text-[10px] font-medium transition-colors",
+                timeFilter === key ? "bg-primary text-primary-foreground" : "text-foreground/70"
+              )}
+              data-testid={`button-time-filter-${key}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 

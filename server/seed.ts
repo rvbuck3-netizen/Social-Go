@@ -1,7 +1,7 @@
 
 import { storage } from "./storage";
 import { db } from "./db";
-import { profiles, posts } from "@shared/schema";
+import { profiles, posts, badges, challenges } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 const OC_CENTER = { lat: 33.6846, lng: -117.8265 };
@@ -102,5 +102,68 @@ export async function seedDatabase() {
     }
 
     console.log(`Seeded ${seedProfiles.length} profiles and ${seedPosts.length} posts!`);
+  }
+
+  const existingBadges = await db.select().from(badges);
+  if (existingBadges.length === 0) {
+    console.log("Seeding badges...");
+    const badgeData = [
+      { code: "founding_member", name: "Founding Member", description: "Joined during the pre-launch period", icon: "star", category: "membership", xpReward: 50 },
+      { code: "first_post", name: "First Post", description: "Created your first geo-tagged post", icon: "message-circle", category: "engagement", xpReward: 25 },
+      { code: "streak_7", name: "Week Warrior", description: "7-day login streak", icon: "flame", category: "streak", xpReward: 100 },
+      { code: "streak_30", name: "Monthly Legend", description: "30-day login streak", icon: "flame", category: "streak", xpReward: 500 },
+      { code: "explorer", name: "Explorer", description: "Visited 5 different areas on the map", icon: "compass", category: "exploration", xpReward: 75 },
+      { code: "social_butterfly", name: "Social Butterfly", description: "Connected with 10 nearby users", icon: "users", category: "social", xpReward: 100 },
+      { code: "local_legend", name: "Local Legend", description: "Most active user in your area", icon: "crown", category: "achievement", xpReward: 200 },
+      { code: "early_bird", name: "Early Bird", description: "Posted before 7 AM", icon: "sunrise", category: "engagement", xpReward: 30 },
+      { code: "night_owl", name: "Night Owl", description: "Posted after midnight", icon: "moon", category: "engagement", xpReward: 30 },
+      { code: "challenge_champ", name: "Challenge Champ", description: "Completed your first weekly challenge", icon: "trophy", category: "achievement", xpReward: 75 },
+      { code: "referral_star", name: "Referral Star", description: "Invited 3 friends who joined", icon: "share-2", category: "social", xpReward: 150 },
+      { code: "go_mode_pro", name: "Go Mode Pro", description: "Used Go Mode 10 times", icon: "zap", category: "engagement", xpReward: 50 },
+    ];
+    for (const b of badgeData) {
+      await db.insert(badges).values(b).onConflictDoNothing();
+    }
+    console.log(`Seeded ${badgeData.length} badges!`);
+  }
+
+  const existingChallenges = await db.select().from(challenges);
+  if (existingChallenges.length === 0) {
+    console.log("Seeding weekly challenges...");
+    const now = new Date();
+    const endOfWeek = new Date(now);
+    endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()));
+    endOfWeek.setHours(23, 59, 59);
+
+    const nextMonth = new Date(now);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    await db.insert(challenges).values([
+      {
+        title: "Post 3 times this week",
+        description: "Drop 3 geo-tagged posts to earn bonus XP and the Challenge Champ badge",
+        icon: "target",
+        targetType: "post",
+        targetCount: 3,
+        rewardXp: 100,
+        rewardBadgeCode: "challenge_champ",
+        startAt: now,
+        endAt: endOfWeek,
+        isActive: true,
+      },
+      {
+        title: "Best Local Coffee",
+        description: "Share your favorite local coffee spot with a post. Best finds get featured!",
+        icon: "coffee",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 50,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+      },
+    ]).onConflictDoNothing();
+    console.log("Seeded 2 challenges!");
   }
 }
