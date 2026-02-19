@@ -19,12 +19,24 @@ async function initStripe() {
     return;
   }
 
+  const hasConnectorHostname = !!process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const hasIdentityToken = !!(process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL);
+  if (!hasConnectorHostname || !hasIdentityToken) {
+    console.warn('Stripe connector credentials not available, skipping Stripe initialization.');
+    return;
+  }
+
   try {
     console.log('Initializing Stripe schema...');
     const { runMigrations } = await import('stripe-replit-sync');
     await runMigrations({ databaseUrl });
     console.log('Stripe schema ready');
+  } catch (error) {
+    console.error('Stripe schema migration failed (non-fatal):', error);
+    return;
+  }
 
+  try {
     const { getStripeSync } = await import('./stripeClient');
     const stripeSync = await getStripeSync();
 
@@ -40,7 +52,7 @@ async function initStripe() {
       .then(() => console.log('Stripe data synced'))
       .catch((err: any) => console.error('Error syncing Stripe data:', err));
   } catch (error) {
-    console.error('Failed to initialize Stripe (non-fatal, server will continue):', error);
+    console.error('Stripe sync setup failed (non-fatal, server will continue):', error);
   }
 }
 

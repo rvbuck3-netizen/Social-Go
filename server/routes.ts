@@ -290,6 +290,11 @@ export async function registerRoutes(
 
   app.get('/api/stripe/products', async (_req, res) => {
     try {
+      const schemaCheck = await db.execute(sql`SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'stripe') as exists`);
+      if (!(schemaCheck.rows as any[])[0]?.exists) {
+        return res.json({ products: [] });
+      }
+
       const result = await db.execute(
         sql`
           SELECT 
@@ -416,6 +421,11 @@ export async function registerRoutes(
       const profile = await storage.getProfile(userId);
 
       if (!profile?.stripeCustomerId) {
+        return res.json({ subscription: null });
+      }
+
+      const schemaCheck = await db.execute(sql`SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'stripe') as exists`);
+      if (!(schemaCheck.rows as any[])[0]?.exists) {
         return res.json({ subscription: null });
       }
 
