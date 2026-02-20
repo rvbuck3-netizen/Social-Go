@@ -13,11 +13,15 @@ import SocialMap from "@/pages/SocialMap";
 import Feed from "@/pages/Feed";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
+import Quests from "@/pages/Quests";
+import Accountability from "@/pages/Accountability";
+import Builder from "@/pages/Builder";
+import MoodCheckPage from "@/pages/MoodCheckPage";
 import UserProfile from "@/pages/UserProfile";
 import AppSettings from "@/pages/AppSettings";
 import AgeVerification from "@/components/AgeVerification";
 import Onboarding from "@/components/Onboarding";
-import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings } from "lucide-react";
+import { MessageCircle, Map as MapIcon, User, ShoppingBag, Settings, Lightbulb, Award, Zap, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
@@ -26,21 +30,24 @@ function BottomNav() {
   const [location] = useLocation();
   const navItems = [
     { href: "/", icon: MapIcon, label: "Explore" },
+    { href: "/quests", icon: Lightbulb, label: "Quests" },
     { href: "/feed", icon: MessageCircle, label: "Feed" },
+    { href: "/accountability", icon: Award, label: "Goals" },
+    { href: "/builder", icon: Zap, label: "Build" },
+    { href: "/mood", icon: Heart, label: "Mood" },
     { href: "/profile", icon: User, label: "Profile" },
-    { href: "/shop", icon: ShoppingBag, label: "Shop" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border/40 flex items-center justify-around z-[2000] pb-safe" role="navigation" aria-label="Main navigation" data-testid="nav-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border/40 flex items-center justify-around overflow-x-auto z-[2000] pb-safe" role="navigation" aria-label="Main navigation" data-testid="nav-bottom">
       {navItems.map((item) => {
         const isActive = location === item.href;
         return (
           <Link key={item.href} href={item.href}>
             <span
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-2.5 px-4 cursor-pointer transition-colors relative",
+                "flex flex-col items-center justify-center gap-1 py-2.5 px-3 cursor-pointer transition-colors relative flex-shrink-0",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
               role="tab"
@@ -52,7 +59,7 @@ function BottomNav() {
                 className="h-5 w-5"
                 strokeWidth={isActive ? 2.2 : 1.5}
               />
-              <span className={cn("text-[10px]", isActive ? "font-semibold" : "font-medium")}>{item.label}</span>
+              <span className={cn("text-[9px]", isActive ? "font-semibold" : "font-medium")}>{item.label}</span>
             </span>
           </Link>
         );
@@ -67,7 +74,11 @@ function AuthenticatedApp() {
       <main className="flex-1 overflow-hidden relative">
         <Switch>
           <Route path="/" component={SocialMap} />
+          <Route path="/quests" component={Quests} />
           <Route path="/feed" component={Feed} />
+          <Route path="/accountability" component={Accountability} />
+          <Route path="/builder" component={Builder} />
+          <Route path="/mood" component={MoodCheckPage} />
           <Route path="/user/:username" component={UserProfile} />
           <Route path="/shop" component={Shop} />
           <Route path="/profile" component={Profile} />

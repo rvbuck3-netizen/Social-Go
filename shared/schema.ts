@@ -11,6 +11,8 @@ export const profiles = pgTable("profiles", {
   username: text("username").notNull().unique(),
   isGoMode: boolean("is_go_mode").default(false).notNull(),
   goModeExpiresAt: timestamp("go_mode_expires_at"),
+  goModeVibe: text("go_mode_vibe"), // 'Gym', 'Chill', 'Work', 'Social'
+  goModeIntent: text("go_mode_intent"), // 'Meet', 'Talk', 'Just around'
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   lastSeen: timestamp("last_seen").defaultNow(),
@@ -30,6 +32,8 @@ export const profiles = pgTable("profiles", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionTier: text("subscription_tier"),
   isFoundingMember: boolean("is_founding_member").default(false).notNull(),
+  isBuilder: boolean("is_builder").default(false).notNull(),
+  builderCategory: text("builder_category"), // 'Founder', 'Creator', 'Developer', 'Investor'
   ageVerified: boolean("age_verified").default(false).notNull(),
   xp: integer("xp").default(0).notNull(),
   level: integer("level").default(1).notNull(),
@@ -150,6 +154,74 @@ export const xpEvents = pgTable("xp_events", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const quests = pgTable("quests", {
+  id: serial("id").primaryKey(),
+  authorUserId: varchar("author_user_id").notNull(),
+  authorName: text("author_name").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'Fitness', 'Dining', 'Sports', 'Study', 'Social', 'Other'
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  scheduledFor: timestamp("scheduled_for"),
+  status: text("status").default("active").notNull(), // 'active', 'filled', 'completed', 'cancelled'
+  participantLimit: integer("participant_limit"),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+export const questResponses = pgTable("quest_responses", {
+  id: serial("id").primaryKey(),
+  questId: integer("quest_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  responseType: text("response_type").notNull(), // 'joined', 'interested', 'chat'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const accountabilityGoals = pgTable("accountability_goals", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  category: text("category").notNull(), // 'Fitness', 'Business', 'Learning', 'Mental health', 'Creative'
+  goalDescription: text("goal_description"),
+  circleId: integer("circle_id"),
+  currentStreak: integer("current_streak").default(0).notNull(),
+  bestStreak: integer("best_streak").default(0).notNull(),
+  lastCheckInAt: timestamp("last_check_in_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const accountabilityCircles = pgTable("accountability_circles", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // 'Fitness', 'Business', 'Learning', 'Mental health', 'Creative'
+  creatorUserId: varchar("creator_user_id").notNull(),
+  maxMembers: integer("max_members").default(5).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const circleMembers = pgTable("circle_members", {
+  id: serial("id").primaryKey(),
+  circleId: integer("circle_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const circleCheckIns = pgTable("circle_check_ins", {
+  id: serial("id").primaryKey(),
+  circleId: integer("circle_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const moodChecks = pgTable("mood_checks", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  mood: text("mood").notNull(), // 'motivated', 'chill', 'stressed', 'want_to_talk'
+  visibleToGoMode: boolean("visible_to_go_mode").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertPostSchema = createInsertSchema(posts).omit({ 
   id: true, 
   createdAt: true,
@@ -179,6 +251,33 @@ export const insertPromotionSchema = createInsertSchema(promotions).omit({
   startAt: true,
 });
 
+export const insertQuestSchema = createInsertSchema(quests).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  authorUserId: true,
+});
+
+export const insertQuestResponseSchema = createInsertSchema(questResponses).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGoalSchema = createInsertSchema(accountabilityGoals).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCircleSchema = createInsertSchema(accountabilityCircles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMoodCheckSchema = createInsertSchema(moodChecks).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type Profile = typeof profiles.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type BlockedUser = typeof blockedUsers.$inferSelect;
@@ -191,3 +290,15 @@ export type Referral = typeof referrals.$inferSelect;
 export type XpEvent = typeof xpEvents.$inferSelect;
 export type Promotion = typeof promotions.$inferSelect;
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
+export type Quest = typeof quests.$inferSelect;
+export type QuestResponse = typeof questResponses.$inferSelect;
+export type AccountabilityGoal = typeof accountabilityGoals.$inferSelect;
+export type AccountabilityCircle = typeof accountabilityCircles.$inferSelect;
+export type CircleMember = typeof circleMembers.$inferSelect;
+export type CircleCheckIn = typeof circleCheckIns.$inferSelect;
+export type MoodCheck = typeof moodChecks.$inferSelect;
+export type InsertQuest = z.infer<typeof insertQuestSchema>;
+export type InsertQuestResponse = z.infer<typeof insertQuestResponseSchema>;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type InsertCircle = z.infer<typeof insertCircleSchema>;
+export type InsertMoodCheck = z.infer<typeof insertMoodCheckSchema>;

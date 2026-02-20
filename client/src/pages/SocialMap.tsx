@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useLocation as useWouterLocation } from "wouter";
+import { UpgradedGoMode } from "@/components/UpgradedGoMode";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -524,6 +525,16 @@ export default function SocialMap() {
           </div>
         </div>
       )}
+
+      <div className="absolute bottom-20 left-4 z-[1000] max-w-xs">
+        <UpgradedGoMode 
+          isActive={user?.isGoMode || false}
+          onToggle={(state) => {
+            // TODO: Update user Go Mode in backend
+            console.log("Go Mode toggled:", state);
+          }}
+        />
+      </div>
 
       <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
         <DialogTrigger asChild>
