@@ -17,13 +17,13 @@ const testimonials = [
   },
   {
     name: "James K.",
-    location: "Austin, TX",
+    location: "Fresno, CA",
     text: "Love how my location stays fuzzy so I feel safe. Met some amazing people at a coffee shop through this app.",
     rating: 5,
   },
   {
     name: "Priya R.",
-    location: "New York, NY",
+    location: "Irvine, CA",
     text: "Finally a social app that doesn't feel creepy. The auto-expiring location and blocking features make me feel in control.",
     rating: 5,
   },
@@ -140,7 +140,7 @@ export default function Landing() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </a>
-                <p className="text-xs text-white/50">No credit card required. Must be 18+ to join.</p>
+                <p className="text-xs text-white/50">No credit card required.</p>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function Landing() {
             <div className="flex items-center justify-center gap-6 flex-wrap">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                <span className="text-sm font-semibold">10,000+ Users</span>
+                <span className="text-sm font-semibold">500+ Active Users</span>
               </div>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2">
