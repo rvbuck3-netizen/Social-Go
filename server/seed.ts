@@ -138,7 +138,7 @@ export async function seedDatabase() {
     const nextMonth = new Date(now);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-    await db.insert(challenges).values([
+    const challengeData = [
       {
         title: "Post 3 times this week",
         description: "Drop 3 geo-tagged posts to earn bonus XP and the Challenge Champ badge",
@@ -150,6 +150,7 @@ export async function seedDatabase() {
         startAt: now,
         endAt: endOfWeek,
         isActive: true,
+        interestTag: null,
       },
       {
         title: "Best Local Coffee",
@@ -162,8 +163,101 @@ export async function seedDatabase() {
         startAt: now,
         endAt: nextMonth,
         isActive: true,
+        interestTag: "Food & Dining",
       },
-    ]).onConflictDoNothing();
-    console.log("Seeded 2 challenges!");
+      {
+        title: "Playlist Drop",
+        description: "Share what you're listening to right now. Post your current vibe!",
+        icon: "music",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 40,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Music",
+      },
+      {
+        title: "Workout Check-in",
+        description: "Post from the gym, trail, or wherever you break a sweat this week",
+        icon: "dumbbell",
+        targetType: "post",
+        targetCount: 2,
+        rewardXp: 60,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: endOfWeek,
+        isActive: true,
+        interestTag: "Fitness",
+      },
+      {
+        title: "Hidden Gem Finder",
+        description: "Share an underrated local spot that deserves more love",
+        icon: "map-pin",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 50,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Outdoors",
+      },
+      {
+        title: "Game Night Organizer",
+        description: "Post about hosting or joining a game night near you",
+        icon: "gamepad-2",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 40,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Gaming",
+      },
+      {
+        title: "Art Walk",
+        description: "Share something creative - a mural, gallery, or your own art from the area",
+        icon: "palette",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 45,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Art",
+      },
+      {
+        title: "Pet Spotter",
+        description: "Share a post featuring your pet or a cute animal you spotted!",
+        icon: "heart",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 35,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Pets",
+      },
+      {
+        title: "Study Buddy Finder",
+        description: "Post your study spot and find people to study with nearby",
+        icon: "book-open",
+        targetType: "post",
+        targetCount: 1,
+        rewardXp: 40,
+        rewardBadgeCode: null,
+        startAt: now,
+        endAt: nextMonth,
+        isActive: true,
+        interestTag: "Education",
+      },
+    ];
+    await db.insert(challenges).values(challengeData).onConflictDoNothing();
+    console.log(`Seeded ${challengeData.length} challenges!`);
   }
 }

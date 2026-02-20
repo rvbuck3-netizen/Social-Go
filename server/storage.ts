@@ -11,6 +11,7 @@ import {
   challengeProgress,
   referrals,
   xpEvents,
+  promotions,
   type Post,
   type Profile,
   type Badge,
@@ -19,6 +20,8 @@ import {
   type ChallengeProgress,
   type Referral,
   type XpEvent,
+  type Promotion,
+  type InsertPromotion,
 } from "@shared/schema";
 import { eq, desc, and, isNotNull, ne, sql, gte, lte } from "drizzle-orm";
 
@@ -71,6 +74,9 @@ export interface IStorage {
   redeemReferral(code: string, refereeUserId: string): Promise<void>;
   checkAndAwardLoginStreak(userId: string): Promise<{ streakCount: number; xpAwarded: number }>;
   getLeaderboard(limit?: number): Promise<Pick<Profile, 'username' | 'xp' | 'level' | 'avatar' | 'isFoundingMember'>[]>;
+  createPromotion(userId: string, data: InsertPromotion): Promise<Promotion>;
+  getActivePromotions(): Promise<Promotion[]>;
+  getUserPromotions(userId: string): Promise<Promotion[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -418,6 +424,37 @@ export class DatabaseStorage implements IStorage {
       .where(ne(profiles.userId, ''))
       .orderBy(desc(profiles.xp))
       .limit(limit);
+  }
+
+  async createPromotion(userId: string, data: InsertPromotion): Promise<Promotion> {
+    const now = new Date();
+    const endAt = new Date(now);
+    endAt.setDate(endAt.getDate() + (data.durationDays || 7));
+
+    const [promo] = await db.insert(promotions).values({
+      ...data,
+      userId,
+      startAt: now,
+      endAt,
+    }).returning();
+    return promo;
+  }
+
+  async getActivePromotions(): Promise<Promotion[]> {
+    const now = new Date();
+    return await db.select().from(promotions)
+      .where(and(
+        eq(promotions.status, 'active'),
+        lte(promotions.startAt, now),
+        gte(promotions.endAt, now),
+      ))
+      .orderBy(desc(promotions.createdAt));
+  }
+
+  async getUserPromotions(userId: string): Promise<Promotion[]> {
+    return await db.select().from(promotions)
+      .where(eq(promotions.userId, userId))
+      .orderBy(desc(promotions.createdAt));
   }
 }
 

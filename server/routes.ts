@@ -94,8 +94,21 @@ export async function registerRoutes(
     res.json(allBadges);
   });
 
-  app.get('/api/challenges', async (_req, res) => {
+  app.get('/api/challenges', async (req: any, res) => {
     const active = await storage.getActiveChallenges();
+    const userId = req.user?.claims?.sub;
+    if (userId) {
+      const profile = await storage.getProfile(userId);
+      if (profile?.interests && profile.interests.length > 0) {
+        const userInterests = profile.interests;
+        const sorted = [...active].sort((a, b) => {
+          const aMatch = a.interestTag && userInterests.includes(a.interestTag) ? 1 : 0;
+          const bMatch = b.interestTag && userInterests.includes(b.interestTag) ? 1 : 0;
+          return bMatch - aMatch;
+        });
+        return res.json(sorted);
+      }
+    }
     res.json(active);
   });
 
@@ -114,6 +127,68 @@ export async function registerRoutes(
   app.get('/api/leaderboard', async (_req, res) => {
     const leaders = await storage.getLeaderboard(20);
     res.json(leaders);
+  });
+
+  app.get('/api/promotions', async (_req, res) => {
+    try {
+      const active = await storage.getActivePromotions();
+      res.json(active);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch promotions' });
+    }
+  });
+
+  app.post('/api/promotions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { businessName, title, description, latitude, longitude, imageUrl, website, category, durationDays: rawDays } = req.body;
+
+      if (!businessName || typeof businessName !== 'string') {
+        return res.status(400).json({ error: 'businessName is required' });
+      }
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({ error: 'title is required' });
+      }
+      const lat = Number(latitude);
+      const lng = Number(longitude);
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return res.status(400).json({ error: 'Valid latitude and longitude are required' });
+      }
+
+      const allowedDurations = [7, 30, 90];
+      const durationDays = allowedDurations.includes(Number(rawDays)) ? Number(rawDays) : 7;
+
+      const endAt = new Date();
+      endAt.setDate(endAt.getDate() + durationDays);
+
+      const promo = await storage.createPromotion(userId, {
+        businessName,
+        title,
+        description: description || null,
+        latitude: lat,
+        longitude: lng,
+        imageUrl: imageUrl || null,
+        website: website || null,
+        category: category || null,
+        durationDays,
+        userId,
+        endAt,
+      });
+      res.status(201).json(promo);
+    } catch (error) {
+      console.error('Promotion creation error:', error);
+      res.status(500).json({ error: 'Failed to create promotion' });
+    }
+  });
+
+  app.get('/api/promotions/mine', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const promos = await storage.getUserPromotions(userId);
+      res.json(promos);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch your promotions' });
+    }
   });
 
   app.post('/api/onboarding/complete', isAuthenticated, async (req: any, res) => {

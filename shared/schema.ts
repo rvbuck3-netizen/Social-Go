@@ -100,6 +100,25 @@ export const challenges = pgTable("challenges", {
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  interestTag: text("interest_tag"),
+});
+
+export const promotions = pgTable("promotions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  businessName: text("business_name").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  latitude: doublePrecision("latitude").notNull(),
+  longitude: doublePrecision("longitude").notNull(),
+  imageUrl: text("image_url"),
+  website: text("website"),
+  category: text("category"),
+  durationDays: integer("duration_days").default(7).notNull(),
+  status: text("status").default("active").notNull(),
+  startAt: timestamp("start_at").defaultNow().notNull(),
+  endAt: timestamp("end_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const challengeProgress = pgTable("challenge_progress", {
@@ -153,6 +172,13 @@ export const insertReportSchema = createInsertSchema(reports).omit({
   status: true,
 });
 
+export const insertPromotionSchema = createInsertSchema(promotions).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  startAt: true,
+});
+
 export type Profile = typeof profiles.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type BlockedUser = typeof blockedUsers.$inferSelect;
@@ -163,3 +189,5 @@ export type Challenge = typeof challenges.$inferSelect;
 export type ChallengeProgress = typeof challengeProgress.$inferSelect;
 export type Referral = typeof referrals.$inferSelect;
 export type XpEvent = typeof xpEvents.$inferSelect;
+export type Promotion = typeof promotions.$inferSelect;
+export type InsertPromotion = z.infer<typeof insertPromotionSchema>;

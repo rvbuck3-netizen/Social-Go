@@ -94,6 +94,11 @@ export default function SocialMap() {
     queryKey: [api.users.me.path],
   });
 
+  const { data: activePromotions } = useQuery<any[]>({
+    queryKey: ['/api/promotions'],
+    refetchInterval: 30000,
+  });
+
   const postMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await fetch(api.posts.create.path, {
@@ -376,6 +381,54 @@ export default function SocialMap() {
                   </button>
                   <span className="popup-label text-[10px] ml-auto pr-2">Block / Report</span>
                 </div>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {activePromotions?.filter(p => p.latitude && p.longitude).map((promo) => (
+          <Marker
+            key={`promo-${promo.id}`}
+            position={[promo.latitude, promo.longitude]}
+            icon={new L.DivIcon({
+              html: `<div class="promo-marker">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                     </div>`,
+              className: "",
+              iconSize: [38, 38],
+              iconAnchor: [19, 19]
+            })}
+          >
+            <Popup className="modern-popup">
+              <div className="min-w-[200px] max-w-[260px]">
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary" className="text-[9px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Promoted</Badge>
+                  </div>
+                  <p className="font-semibold text-sm">{promo.businessName}</p>
+                  <p className="text-[12px] text-white/80 mt-0.5">{promo.title}</p>
+                </div>
+                {promo.description && (
+                  <>
+                    <div className="popup-divider border-t mx-4" />
+                    <p className="text-[12px] text-white/60 px-4 py-2.5">{promo.description}</p>
+                  </>
+                )}
+                {promo.website && (
+                  <>
+                    <div className="popup-divider border-t mx-4" />
+                    <div className="px-4 py-2">
+                      <a href={promo.website.startsWith('http') ? promo.website : `https://${promo.website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1" data-testid={`link-promo-website-${promo.id}`}>
+                        <Globe className="h-3 w-3" /> Visit website
+                      </a>
+                    </div>
+                  </>
+                )}
+                {promo.category && (
+                  <div className="px-4 pb-2.5">
+                    <Badge variant="secondary" className="text-[9px]">{promo.category}</Badge>
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>

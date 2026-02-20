@@ -7,9 +7,44 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart, ChevronDown, Shield, TrendingUp, Users, Clock, Loader2, ExternalLink } from "lucide-react";
+import { Zap, Flame, Crown, Star, Coins, Check, Sparkles, Eye, MessageCircle, Filter, Heart, ChevronDown, Shield, TrendingUp, Users, Clock, Loader2, ExternalLink, MapPin, Building2, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
+
+const fallbackSubscriptions: StripeProduct[] = [
+  {
+    id: "fallback-go-plus",
+    name: "Go+",
+    description: "See more, connect more",
+    metadata: { type: "subscription", tier: "go-plus" },
+    prices: [
+      { id: "fallback-plus-monthly", unitAmount: 999, currency: "usd", recurring: { interval: "month", interval_count: 1 }, metadata: { period: "monthly" } },
+      { id: "fallback-plus-6month", unitAmount: 4999, currency: "usd", recurring: { interval: "month", interval_count: 6 }, metadata: { period: "6month" } },
+    ],
+  },
+  {
+    id: "fallback-go-premium",
+    name: "Go Premium",
+    description: "The ultimate Social Go experience",
+    metadata: { type: "subscription", tier: "go-premium" },
+    prices: [
+      { id: "fallback-premium-monthly", unitAmount: 1999, currency: "usd", recurring: { interval: "month", interval_count: 1 }, metadata: { period: "monthly" } },
+      { id: "fallback-premium-6month", unitAmount: 9999, currency: "usd", recurring: { interval: "month", interval_count: 6 }, metadata: { period: "6month" } },
+    ],
+  },
+];
+
+const fallbackBoosts: StripeProduct[] = [
+  { id: "fallback-boost-1", name: "1 Boost", description: null, metadata: { type: "boost", quantity: "1" }, prices: [{ id: "fb-b1", unitAmount: 299, currency: "usd", recurring: null, metadata: {} }] },
+  { id: "fallback-boost-5", name: "5 Boosts", description: null, metadata: { type: "boost", quantity: "5", popular: "true" }, prices: [{ id: "fb-b5", unitAmount: 1199, currency: "usd", recurring: null, metadata: {} }] },
+  { id: "fallback-boost-10", name: "10 Boosts", description: null, metadata: { type: "boost", quantity: "10" }, prices: [{ id: "fb-b10", unitAmount: 1999, currency: "usd", recurring: null, metadata: {} }] },
+];
+
+const fallbackTokens: StripeProduct[] = [
+  { id: "fallback-tokens-50", name: "50 Tokens", description: null, metadata: { type: "tokens", quantity: "50" }, prices: [{ id: "fb-t50", unitAmount: 499, currency: "usd", recurring: null, metadata: {} }] },
+  { id: "fallback-tokens-200", name: "200 Tokens", description: null, metadata: { type: "tokens", quantity: "200", bonus: "20" }, prices: [{ id: "fb-t200", unitAmount: 1499, currency: "usd", recurring: null, metadata: {} }] },
+  { id: "fallback-tokens-500", name: "500 Tokens", description: null, metadata: { type: "tokens", quantity: "500", bonus: "75", popular: "true" }, prices: [{ id: "fb-t500", unitAmount: 2999, currency: "usd", recurring: null, metadata: {} }] },
+];
 
 type BillingPeriod = "weekly" | "monthly" | "6month";
 
@@ -169,10 +204,11 @@ export default function Shop() {
   );
 
   const products = productsData?.products || [];
-  const subscriptionProducts = products.filter(p => p.metadata?.type === "subscription");
-  const boostProducts = products.filter(p => p.metadata?.type === "boost");
+  const stripeAvailable = products.length > 0;
+  const subscriptionProducts = stripeAvailable ? products.filter(p => p.metadata?.type === "subscription") : fallbackSubscriptions;
+  const boostProducts = stripeAvailable ? products.filter(p => p.metadata?.type === "boost") : fallbackBoosts;
   const shoutoutProducts = products.filter(p => p.metadata?.type === "shoutout");
-  const tokenProducts = products.filter(p => p.metadata?.type === "tokens");
+  const tokenProducts = stripeAvailable ? products.filter(p => p.metadata?.type === "tokens") : fallbackTokens;
   const currentSubscription = subscriptionData?.subscription;
 
   const periodToMetadata: Record<BillingPeriod, string> = {
@@ -188,6 +224,10 @@ export default function Shop() {
   };
 
   const handleCheckout = (priceId: string, isSubscription: boolean) => {
+    if (priceId.startsWith("fallback-") || priceId.startsWith("fb-")) {
+      toast({ title: "Coming soon", description: "Payments are being set up. Check back shortly!" });
+      return;
+    }
     checkoutMutation.mutate({ priceId, mode: isSubscription ? "subscription" : "payment" });
   };
 
@@ -578,6 +618,68 @@ export default function Shop() {
                 );
               })
             )}
+          </div>
+        )}
+      </div>
+
+      <div className="px-5 pt-4 pb-2">
+        <button
+          onClick={() => toggleSection("promote")}
+          className="w-full flex items-center gap-3 text-left py-1 mb-1"
+          data-testid="button-toggle-promote-business"
+        >
+          <div className="h-9 w-9 rounded-md bg-emerald-500/8 flex items-center justify-center shrink-0">
+            <Building2 className="h-4.5 w-4.5 text-emerald-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold font-display">Promote Your Business</p>
+            <p className="text-xs text-muted-foreground">Place your brand on the Social Go map</p>
+          </div>
+          <div className={cn(
+            "h-7 w-7 rounded-md flex items-center justify-center shrink-0 bg-muted transition-transform",
+            openSection === "promote" && "rotate-180"
+          )}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </button>
+        {openSection === "promote" && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground mb-3">Get a branded pin on the map visible to all nearby users. Great for events, restaurants, shops, and local services.</p>
+            {[
+              { days: 7, price: "$9.99", label: "1 Week", subtitle: "Perfect for events", id: "promo-7" },
+              { days: 30, price: "$29.99", label: "1 Month", subtitle: "Best for local businesses", popular: true, id: "promo-30" },
+              { days: 90, price: "$69.99", label: "3 Months", subtitle: "Maximum exposure", id: "promo-90" },
+            ].map((pkg) => (
+              <Card key={pkg.id} className="flex items-center gap-3 p-3">
+                <div className="h-9 w-9 rounded-md bg-emerald-500/8 flex items-center justify-center shrink-0">
+                  <MapPin className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold" data-testid={`text-promo-label-${pkg.days}`}>{pkg.label}</span>
+                    {pkg.popular && (
+                      <Badge variant="secondary" className="text-[9px]">Most popular</Badge>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">{pkg.subtitle}</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="font-semibold"
+                  onClick={() => {
+                    toast({ title: "Coming soon", description: "Business promotions launching soon! Stay tuned." });
+                  }}
+                  data-testid={`button-buy-promo-${pkg.days}`}
+                >
+                  {pkg.price}
+                </Button>
+              </Card>
+            ))}
+            <div className="flex items-start gap-2 pt-2">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+              <p className="text-[11px] text-muted-foreground">Your branded pin shows your business name, category, and a link to your website on the map for all nearby users.</p>
+            </div>
           </div>
         )}
       </div>

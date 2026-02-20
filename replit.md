@@ -42,7 +42,8 @@ Profile fields include: `is_founding_member` (boolean, marks pre-launch users), 
 Gamification fields on profiles: `xp` (integer), `level` (integer 1-10), `streak` (integer), `lastDailyLoginAt` (timestamp), `referralCode` (varchar), `onboardingCompleted` (boolean), `interests` (text array), `locationRadius` (integer).
 4. **badges** - `id` serial PK, `code` (unique), `name`, `description`, `icon`, `category`, `xpReward`
 5. **userBadges** - `id` serial PK, `userId` FK, `badgeCode` FK, `unlockedAt`
-6. **challenges** - `id` serial PK, `title`, `description`, `icon`, `targetType`, `targetCount`, `rewardXp`, `rewardBadgeCode`, `startAt`, `endAt`, `isActive`
+10. **promotions** - `id` serial PK, `userId` FK, `businessName`, `title`, `description`, `latitude`, `longitude`, `imageUrl`, `website`, `category`, `durationDays`, `status`, `startAt`, `endAt`, `createdAt`
+6. **challenges** - `id` serial PK, `title`, `description`, `icon`, `targetType`, `targetCount`, `rewardXp`, `rewardBadgeCode`, `startAt`, `endAt`, `isActive`, `interestTag` (nullable, links challenge to user interest like "Music", "Fitness", "Food & Dining")
 7. **challengeProgress** - `id` serial PK, `userId` FK, `challengeId` FK, `progress`, `completed`, `completedAt`
 8. **referrals** - `id` serial PK, `referrerUserId`, `referredUserId`, `referralCode`, `completedAt`
 9. **xpEvents** - `id` serial PK, `userId`, `amount`, `source`, `sourceId`, `createdAt`
@@ -72,10 +73,13 @@ All API routes require authentication (except `/api/auth/*` and `/api/logout`).
 - `POST /api/verify-age` - Confirm age verification (18+) for new users
 - `GET /api/gamification/me` - Returns current user's XP, level, streak, badges
 - `GET /api/badges` - List all available badges
-- `GET /api/challenges` - List active challenges with user progress
+- `GET /api/challenges` - List active challenges (sorted by user's interests when authenticated)
 - `POST /api/challenges/join` - Join a challenge (requires challengeId)
 - `GET /api/leaderboard` - Top 20 users by XP
 - `POST /api/onboarding/complete` - Complete onboarding flow (interests, locationRadius, referralCode)
+- `GET /api/promotions` - Get all active business promotions (for map pins)
+- `POST /api/promotions` - Create a business promotion (requires businessName, title, latitude, longitude)
+- `GET /api/promotions/mine` - Get current user's promotions
 - `GET /api/referral/code` - Get or generate user's referral code
 
 ### Gamification System
