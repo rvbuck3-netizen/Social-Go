@@ -6,7 +6,7 @@ import L from "leaflet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, Ban, Flag, Locate, Compass, Clock, Flame } from "lucide-react";
+import { Plus, Minus, Navigation, Instagram, Twitter, Globe, EyeOff, Ban, Flag, Locate, Compass, Clock, Flame, Users, Zap, ArrowRight, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useLocation as useWouterLocation } from "wouter";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -79,6 +80,10 @@ export default function SocialMap() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'hour' | 'today' | 'week'>('all');
+  const [showWelcomeOffer, setShowWelcomeOffer] = useState(() => {
+    return !sessionStorage.getItem('welcome-offer-dismissed');
+  });
+  const [, navigate] = useWouterLocation();
   const { toast } = useToast();
 
   const { data: posts } = useQuery<any[]>({
@@ -455,6 +460,15 @@ export default function SocialMap() {
           <div className={cn("h-2 w-2 rounded-full", user?.isGoMode ? "bg-emerald-500 animate-pulse" : "bg-red-500")} />
           <Compass className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs font-semibold tracking-wide font-display">Social Go</span>
+          {(() => {
+            const otherUsers = nearbyUsers?.filter(u => u.userId !== user?.userId) || [];
+            return otherUsers.length > 0 ? (
+              <div className="flex items-center gap-1 ml-1 pl-2 border-l border-foreground/10">
+                <Users className="h-3 w-3 text-emerald-500" />
+                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400" data-testid="text-nearby-count-map">{otherUsers.length} nearby</span>
+              </div>
+            ) : null;
+          })()}
         </div>
       </div>
 
@@ -475,6 +489,41 @@ export default function SocialMap() {
           ))}
         </div>
       </div>
+
+      {showWelcomeOffer && user && !user.isBoosted && !user.subscriptionTier && (
+        <div className="absolute bottom-[5.5rem] left-4 right-16 z-[1000] glass rounded-md shadow-lg p-3 animate-in slide-in-from-bottom-4" data-testid="banner-welcome-offer">
+          <button
+            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-background/50 flex items-center justify-center"
+            onClick={() => {
+              setShowWelcomeOffer(false);
+              sessionStorage.setItem('welcome-offer-dismissed', 'true');
+            }}
+            data-testid="button-dismiss-welcome"
+          >
+            <X className="h-3 w-3" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-amber-500/15 flex items-center justify-center shrink-0">
+              <Zap className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold">Stand out from the crowd</p>
+              <p className="text-[10px] text-muted-foreground">Boost your profile to be seen by 3x more people</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowWelcomeOffer(false);
+                sessionStorage.setItem('welcome-offer-dismissed', 'true');
+                navigate('/shop');
+              }}
+              data-testid="button-welcome-shop"
+            >
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
         <DialogTrigger asChild>

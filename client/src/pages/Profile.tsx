@@ -19,6 +19,7 @@ import { SiTiktok, SiSnapchat, SiLinkedin, SiFacebook } from "react-icons/si";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 const themeColors = [
   { id: "purple", label: "Purple", color: "bg-purple-500", ring: "ring-purple-500" },
@@ -70,6 +71,7 @@ const moodOptions = [
 
 export default function Profile() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [showMoreSocials, setShowMoreSocials] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("purple");
@@ -236,6 +238,21 @@ export default function Profile() {
           </Card>
         </div>
 
+        {!user?.isBoosted && !user?.subscriptionTier && (
+          <Card className="mt-4 p-3.5 flex items-center gap-3 bg-amber-500/5 border-amber-500/15 hover-elevate cursor-pointer" onClick={() => navigate('/shop')} data-testid="card-boost-cta">
+            <div className="h-9 w-9 rounded-md bg-amber-500/10 flex items-center justify-center shrink-0">
+              <Zap className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">Boost Your Profile</p>
+              <p className="text-[11px] text-muted-foreground">Get 3x more visibility for 30 minutes</p>
+            </div>
+            <Button size="sm" data-testid="button-boost-profile">
+              Boost
+            </Button>
+          </Card>
+        )}
+
         {gamification && (
           <Card className="mt-4 p-4">
             <div className="flex items-center justify-between mb-2.5">
@@ -280,31 +297,70 @@ export default function Profile() {
           </Card>
         )}
 
-        {referralData?.code && (
-          <Card className="mt-3 p-3.5">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Share2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs font-medium">Your referral code</p>
-                  <p className="text-[11px] text-muted-foreground font-mono truncate" data-testid="text-referral-code">{referralData.code}</p>
+        {referralData?.code && (() => {
+          const referralLink = `${window.location.origin}?ref=${referralData.code}`;
+          const shareText = `Join me on Social Go! Use my referral code ${referralData.code} to sign up and we both earn rewards.`;
+          const canShare = typeof navigator.share === 'function';
+
+          return (
+            <Card className="mt-4 p-4 bg-primary/5 border-primary/15">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+                  <Share2 className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Invite Friends</p>
+                  <p className="text-[11px] text-muted-foreground">You both earn 100 XP when they join</p>
                 </div>
               </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  navigator.clipboard.writeText(referralData.code);
-                  setCopiedReferral(true);
-                  setTimeout(() => setCopiedReferral(false), 2000);
-                }}
-                data-testid="button-copy-referral"
-              >
-                {copiedReferral ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-          </Card>
-        )}
+              <div className="flex items-center gap-2 p-2 bg-background rounded-md border border-border/60 mb-3">
+                <p className="text-[11px] text-muted-foreground font-mono truncate flex-1" data-testid="text-referral-code">{referralData.code}</p>
+                <Button
+                  size="sm"
+                  variant={copiedReferral ? "default" : "outline"}
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(referralLink);
+                      setCopiedReferral(true);
+                      toast({ title: "Link copied!", description: "Share it with your friends." });
+                      setTimeout(() => setCopiedReferral(false), 2000);
+                    } catch {
+                      toast({ title: "Copy failed", description: "Try selecting and copying the code manually." });
+                    }
+                  }}
+                  data-testid="button-copy-referral"
+                >
+                  {copiedReferral ? <><Check className="h-3.5 w-3.5 mr-1" /> Copied</> : <><Copy className="h-3.5 w-3.5 mr-1" /> Copy Link</>}
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {canShare && (
+                  <Button
+                    className="flex-1"
+                    onClick={() => {
+                      navigator.share({ title: "Join Social Go", text: shareText, url: referralLink }).catch(() => {});
+                    }}
+                    data-testid="button-share-invite"
+                  >
+                    <Share2 className="h-4 w-4 mr-1.5" />
+                    Share with Friends
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className={canShare ? "" : "flex-1"}
+                  onClick={() => {
+                    const smsBody = encodeURIComponent(shareText + " " + referralLink);
+                    window.open(`sms:?body=${smsBody}`, '_blank');
+                  }}
+                  data-testid="button-sms-invite"
+                >
+                  Text a Friend
+                </Button>
+              </div>
+            </Card>
+          );
+        })()}
 
         {hasSocials && (
           <div className="flex items-center gap-2 mt-4 flex-wrap">
